@@ -171,7 +171,7 @@ $departments = $stmt->fetchAll();
                 
                 <select name="status" class="form-control" style="width: auto;">
                     <option value="">All Status</option>
-                    <option value="Activate" <?php echo $filter_status == 'Activate' ? 'selected' : ''; ?>>Activate</option>
+                    <option value="Active" <?php echo $filter_status == 'Active' ? 'selected' : ''; ?>>Activated</option>   
                     <option value="Deactivated" <?php echo $filter_status == 'Deactivated' ? 'selected' : ''; ?>>Deactivated</option>
                 </select>
                 
@@ -244,8 +244,8 @@ $departments = $stmt->fetchAll();
                                 <td><?php echo htmlspecialchars($record['password']); ?></td>
                                 <td><?php echo $record['record_date'] ? date('M d, Y', strtotime($record['record_date'])) : '-'; ?></td>
                                 <td>
-                                    <span class="badge badge-<?php echo $record['account_status'] == 'Activate' ? 'approved' : 'rejected'; ?>">
-                                        <?php echo $record['account_status']; ?>
+                                    <span class="badge badge-<?php echo $record['account_status'] == 'Active' ? 'approved' : 'rejected'; ?>">
+                                        <?php echo $record['account_status'] == 'Active' ? 'Activated' : 'Deactivated'; ?>
                                     </span>
                                 </td>
                                 <td>

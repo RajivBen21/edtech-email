@@ -129,8 +129,8 @@ $recent_records = $stmt->fetchAll();
                             <td><?php echo htmlspecialchars($record['college_department']); ?></td>
                             <td><?php echo htmlspecialchars($record['email']); ?></td>
                             <td>
-                                <span class="badge badge-<?php echo $record['account_status'] == 'Activate' ? 'approved' : 'rejected'; ?>">
-                                    <?php echo $record['account_status']; ?>
+                                <span class="badge badge-<?php echo $record['account_status'] == 'Active' ? 'approved' : 'rejected'; ?>">
+                                    <?php echo $record['account_status'] == 'Active' ? 'Activated' : $record['account_status']; ?>
                                 </span>
                             </td>
                             <td><?php echo date('M d, Y', strtotime($record['created_at'])); ?></td>

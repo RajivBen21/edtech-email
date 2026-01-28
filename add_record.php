@@ -171,7 +171,7 @@ if (isset($_GET['success'])) {
                     <div class="form-group">
                         <label for="account_status">Account Status</label>
                         <select name="account_status" id="account_status" class="form-control">
-                            <option value="Activate">Activate</option>
+                            <option value="Active">Activated</option>
                             <option value="Deactivated">Deactivated</option>
                         </select>
                     </div>

@@ -66,16 +66,13 @@ $sql = "SELECT * FROM email_records WHERE 1=1";
 $params = [];
 
 if (!empty($filter_department)) {
-    // Find the acronym for this department
     $acronym = array_search($filter_department, $department_mapping);
     
     if ($acronym !== false) {
-        // Search for both full name AND acronym
         $sql .= " AND (college_department = ? OR college_department = ?)";
         $params[] = $filter_department;
         $params[] = $acronym;
     } else {
-        // Just search for the selected value
         $sql .= " AND college_department = ?";
         $params[] = $filter_department;
     }
@@ -96,19 +93,18 @@ if (!empty($search)) {
 
 $sql .= " ORDER BY created_at DESC";
 
-// First, get total count for pagination
+// Get total count for pagination
 $count_sql = str_replace("SELECT *", "SELECT COUNT(*) as total", $sql);
 $count_stmt = $pdo->prepare($count_sql);
 $count_stmt->execute($params);
 $total_records = $count_stmt->fetch()['total'];
 $total_pages = ceil($total_records / $records_per_page);
 
-// Make sure current page doesn't exceed total pages
 if ($current_page > $total_pages && $total_pages > 0) {
     $current_page = $total_pages;
 }
 
-// Now add LIMIT for pagination
+// Add LIMIT for pagination
 $offset = ($current_page - 1) * $records_per_page;
 $sql .= " LIMIT $records_per_page OFFSET $offset";
 
@@ -130,77 +126,6 @@ $departments = $stmt->fetchAll();
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
-    <style>
-        .export-bar {
-            background: #f8f9fa;
-            padding: 15px 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-        .export-bar label {
-            font-weight: 600;
-        }
-        .checkbox-cell {
-            width: 40px;
-            text-align: center;
-        }
-        .checkbox-cell input {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-        .select-count {
-            background: #C41E3A;
-            color: white;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 14px;
-        }
-        .dept-badge {
-            background: #e9ecef;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            color: #495057;
-        }
-        .pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            margin-top: 20px;
-            padding: 20px;
-            flex-wrap: wrap;
-        }
-        .pagination-info {
-            padding: 10px 15px;
-            color: #666;
-        }
-        .page-numbers {
-            display: flex;
-            gap: 5px;
-        }
-        .page-numbers a, .page-numbers span {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            text-decoration: none;
-            color: #333;
-            font-family: 'Montserrat', sans-serif;
-        }
-        .page-numbers a:hover {
-            background: #f0f0f0;
-        }
-        .page-numbers .current {
-            background: #C41E3A;
-            color: white;
-            border-color: #C41E3A;
-        }
-    </style>
 </head>
 <body>
     <!-- Header -->
@@ -259,7 +184,7 @@ $departments = $stmt->fetchAll();
             
             <?php if (count($records) > 0): ?>
             
-            <!-- Export Form - Changed to preview_export.php -->
+            <!-- Export Form -->
             <form method="POST" action="preview_export.php" id="exportForm">
                 <div class="export-bar">
                     <label>Export Selected:</label>
@@ -291,11 +216,9 @@ $departments = $stmt->fetchAll();
                         </thead>
                         <tbody>
                             <?php 
-                            // Calculate starting number based on current page
                             $start_number = ($current_page - 1) * $records_per_page + 1;
                             $count = $start_number; 
                             foreach ($records as $record): 
-                                // Get full department name if acronym
                                 $dept_display = $record['college_department'];
                                 $dept_full = isset($department_mapping[$dept_display]) ? $department_mapping[$dept_display] : '';
                             ?>
@@ -342,7 +265,6 @@ $departments = $stmt->fetchAll();
             <?php if ($total_pages > 1): ?>
             <div class="pagination">
                 <?php
-                // Build query string for pagination links
                 $query_params = [];
                 if ($filter_department) $query_params['department'] = $filter_department;
                 if ($filter_status) $query_params['status'] = $filter_status;
@@ -351,15 +273,12 @@ $departments = $stmt->fetchAll();
                 $query_string = $query_string ? '&' . $query_string : '';
                 ?>
                 
-                <!-- Previous Button -->
                 <?php if ($current_page > 1): ?>
                     <a href="?page=<?php echo $current_page - 1; ?><?php echo $query_string; ?>" class="btn btn-secondary">← Previous</a>
                 <?php endif; ?>
                 
-                <!-- Page Numbers -->
                 <div class="page-numbers">
                     <?php
-                    // Show page numbers (max 5 at a time)
                     $start_page = max(1, $current_page - 2);
                     $end_page = min($total_pages, $current_page + 2);
                     
@@ -386,12 +305,10 @@ $departments = $stmt->fetchAll();
                     <?php endif; ?>
                 </div>
                 
-                <!-- Next Button -->
                 <?php if ($current_page < $total_pages): ?>
                     <a href="?page=<?php echo $current_page + 1; ?><?php echo $query_string; ?>" class="btn btn-secondary">Next →</a>
                 <?php endif; ?>
                 
-                <!-- Page Info -->
                 <span class="pagination-info">
                     Showing <?php echo $start_number; ?>-<?php echo min($start_number + $records_per_page - 1, $total_records); ?> of <?php echo $total_records; ?> records
                 </span>
@@ -407,7 +324,6 @@ $departments = $stmt->fetchAll();
     </div>
 
     <script>
-        // Select All checkbox
         document.getElementById('selectAll').addEventListener('change', function() {
             const checkboxes = document.querySelectorAll('.record-checkbox');
             const maxSelect = 5;
@@ -425,12 +341,10 @@ $departments = $stmt->fetchAll();
             updateCount();
         });
 
-        // Individual checkbox change
         document.querySelectorAll('.record-checkbox').forEach(checkbox => {
             checkbox.addEventListener('change', function() {
                 const checked = document.querySelectorAll('.record-checkbox:checked');
                 
-                // Limit to 5
                 if (checked.length > 5) {
                     this.checked = false;
                     alert('You can only select up to 5 records at a time (template has 5 rows).');
@@ -440,7 +354,6 @@ $departments = $stmt->fetchAll();
             });
         });
 
-        // Update selected count
         function updateCount() {
             const checked = document.querySelectorAll('.record-checkbox:checked');
             document.getElementById('selectedCount').textContent = checked.length;

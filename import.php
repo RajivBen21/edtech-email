@@ -15,17 +15,14 @@ $imported_count = 0;
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['csv_file'])) {
     $file = $_FILES['csv_file'];
     
-    // Check for errors
     if ($file['error'] !== UPLOAD_ERR_OK) {
         $error = 'Error uploading file.';
     } elseif ($file['type'] !== 'text/csv' && !str_ends_with($file['name'], '.csv')) {
         $error = 'Please upload a CSV file.';
     } else {
-        // Process CSV
         $handle = fopen($file['tmp_name'], 'r');
         
         if ($handle) {
-            // Skip header row if checkbox is checked
             if (isset($_POST['has_header'])) {
                 fgetcsv($handle);
             }
@@ -33,10 +30,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['csv_file'])) {
             $recorded_by = $_SESSION['full_name'];
             
             while (($data = fgetcsv($handle)) !== false) {
-                // Skip empty rows
                 if (empty($data[0]) && empty($data[1])) continue;
                 
-                // Expected columns: college_department, last_name, first_name, middle_name, email, password, record_date, account_status
                 $college_department = isset($data[0]) ? trim($data[0]) : '';
                 $last_name = isset($data[1]) ? trim($data[1]) : '';
                 $first_name = isset($data[2]) ? trim($data[2]) : '';
@@ -46,19 +41,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['csv_file'])) {
                 $record_date = isset($data[6]) ? trim($data[6]) : date('Y-m-d');
                 $account_status = isset($data[7]) ? trim($data[7]) : 'Activate';
                 
-                // Validate account_status
                 if (!in_array($account_status, ['Activate', 'Deactivated'])) {
                     $account_status = 'Activate';
                 }
                 
-                // Format date if needed
                 if (!empty($record_date) && strtotime($record_date)) {
                     $record_date = date('Y-m-d', strtotime($record_date));
                 } else {
                     $record_date = date('Y-m-d');
                 }
                 
-                // Insert record
                 if (!empty($last_name) && !empty($first_name)) {
                     try {
                         $stmt = $pdo->prepare("
@@ -136,8 +128,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['csv_file'])) {
                 <div class="alert alert-error"><?php echo $error; ?></div>
             <?php endif; ?>
             
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                <h4 style="margin-bottom: 10px;">📋 CSV File Format</h4>
+            <div style="background: #f7fafc; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <h4 style="margin-bottom: 10px; color: #1a365d;">📋 CSV File Format</h4>
                 <p style="margin-bottom: 10px;">Your CSV file should have columns in this order:</p>
                 <table class="data-table" style="margin-bottom: 15px;">
                     <thead>
@@ -178,4 +170,36 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['csv_file'])) {
                 <p style="font-size: 13px; color: #666;">
                     <strong>Note:</strong> account_status should be either "Activate" or "Deactivated"
                 </p>
+            </div>
             
+            <form method="POST" action="" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="csv_file">Select CSV File</label>
+                    <input type="file" name="csv_file" id="csv_file" class="form-control" 
+                           accept=".csv" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="has_header" checked>
+                        First row is header (skip first row)
+                    </label>
+                </div>
+                
+                <div style="display: flex; gap: 15px; margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary">Import Records</button>
+                    <a href="dashboard.php" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+        
+        <?php if ($imported_count > 0): ?>
+        <div class="card">
+            <p style="text-align: center;">
+                <a href="records.php" class="btn btn-success">View Imported Records</a>
+            </p>
+        </div>
+        <?php endif; ?>
+    </div>
+</body>
+</html>

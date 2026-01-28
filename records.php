@@ -50,6 +50,11 @@ $filter_department = isset($_GET['department']) ? $_GET['department'] : '';
 $filter_status = isset($_GET['status']) ? $_GET['status'] : '';
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
+// Pagination settings
+$records_per_page = 50;
+$current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+if ($current_page < 1) $current_page = 1;
+
 // Check for errors
 $error = '';
 if (isset($_GET['error']) && $_GET['error'] == 'no_selection') {
@@ -91,6 +96,22 @@ if (!empty($search)) {
 
 $sql .= " ORDER BY created_at DESC";
 
+// First, get total count for pagination
+$count_sql = str_replace("SELECT *", "SELECT COUNT(*) as total", $sql);
+$count_stmt = $pdo->prepare($count_sql);
+$count_stmt->execute($params);
+$total_records = $count_stmt->fetch()['total'];
+$total_pages = ceil($total_records / $records_per_page);
+
+// Make sure current page doesn't exceed total pages
+if ($current_page > $total_pages && $total_pages > 0) {
+    $current_page = $total_pages;
+}
+
+// Now add LIMIT for pagination
+$offset = ($current_page - 1) * $records_per_page;
+$sql .= " LIMIT $records_per_page OFFSET $offset";
+
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $records = $stmt->fetchAll();
@@ -98,9 +119,6 @@ $records = $stmt->fetchAll();
 // Get departments for filter dropdown
 $stmt = $pdo->query("SELECT * FROM departments ORDER BY department_name");
 $departments = $stmt->fetchAll();
-
-// Get total counts
-$total_records = count($records);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -108,6 +126,9 @@ $total_records = count($records);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>All Records - LDCU Email System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <style>
         .export-bar {
@@ -146,6 +167,39 @@ $total_records = count($records);
             font-size: 12px;
             color: #495057;
         }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+            padding: 20px;
+            flex-wrap: wrap;
+        }
+        .pagination-info {
+            padding: 10px 15px;
+            color: #666;
+        }
+        .page-numbers {
+            display: flex;
+            gap: 5px;
+        }
+        .page-numbers a, .page-numbers span {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            text-decoration: none;
+            color: #333;
+            font-family: 'Montserrat', sans-serif;
+        }
+        .page-numbers a:hover {
+            background: #f0f0f0;
+        }
+        .page-numbers .current {
+            background: #C41E3A;
+            color: white;
+            border-color: #C41E3A;
+        }
     </style>
 </head>
 <body>
@@ -170,7 +224,7 @@ $total_records = count($records);
     <div class="container">
         <div class="card">
             <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                <h3 class="card-title">All Email Records (<?php echo $total_records; ?> records)</h3>
+                <h3 class="card-title">All Email Records (<?php echo $total_records; ?> total records)</h3>
                 <a href="add_record.php" class="btn btn-primary">+ Add New Record</a>
             </div>
             
@@ -237,7 +291,9 @@ $total_records = count($records);
                         </thead>
                         <tbody>
                             <?php 
-                            $count = 1; 
+                            // Calculate starting number based on current page
+                            $start_number = ($current_page - 1) * $records_per_page + 1;
+                            $count = $start_number; 
                             foreach ($records as $record): 
                                 // Get full department name if acronym
                                 $dept_display = $record['college_department'];
@@ -281,6 +337,66 @@ $total_records = count($records);
                     </table>
                 </div>
             </form>
+            
+            <!-- Pagination -->
+            <?php if ($total_pages > 1): ?>
+            <div class="pagination">
+                <?php
+                // Build query string for pagination links
+                $query_params = [];
+                if ($filter_department) $query_params['department'] = $filter_department;
+                if ($filter_status) $query_params['status'] = $filter_status;
+                if ($search) $query_params['search'] = $search;
+                $query_string = http_build_query($query_params);
+                $query_string = $query_string ? '&' . $query_string : '';
+                ?>
+                
+                <!-- Previous Button -->
+                <?php if ($current_page > 1): ?>
+                    <a href="?page=<?php echo $current_page - 1; ?><?php echo $query_string; ?>" class="btn btn-secondary">← Previous</a>
+                <?php endif; ?>
+                
+                <!-- Page Numbers -->
+                <div class="page-numbers">
+                    <?php
+                    // Show page numbers (max 5 at a time)
+                    $start_page = max(1, $current_page - 2);
+                    $end_page = min($total_pages, $current_page + 2);
+                    
+                    if ($start_page > 1): ?>
+                        <a href="?page=1<?php echo $query_string; ?>">1</a>
+                        <?php if ($start_page > 2): ?>
+                            <span>...</span>
+                        <?php endif; ?>
+                    <?php endif; ?>
+                    
+                    <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
+                        <?php if ($i == $current_page): ?>
+                            <span class="current"><?php echo $i; ?></span>
+                        <?php else: ?>
+                            <a href="?page=<?php echo $i; ?><?php echo $query_string; ?>"><?php echo $i; ?></a>
+                        <?php endif; ?>
+                    <?php endfor; ?>
+                    
+                    <?php if ($end_page < $total_pages): ?>
+                        <?php if ($end_page < $total_pages - 1): ?>
+                            <span>...</span>
+                        <?php endif; ?>
+                        <a href="?page=<?php echo $total_pages; ?><?php echo $query_string; ?>"><?php echo $total_pages; ?></a>
+                    <?php endif; ?>
+                </div>
+                
+                <!-- Next Button -->
+                <?php if ($current_page < $total_pages): ?>
+                    <a href="?page=<?php echo $current_page + 1; ?><?php echo $query_string; ?>" class="btn btn-secondary">Next →</a>
+                <?php endif; ?>
+                
+                <!-- Page Info -->
+                <span class="pagination-info">
+                    Showing <?php echo $start_number; ?>-<?php echo min($start_number + $records_per_page - 1, $total_records); ?> of <?php echo $total_records; ?> records
+                </span>
+            </div>
+            <?php endif; ?>
             
             <?php else: ?>
                 <p style="text-align: center; color: #666; padding: 40px;">

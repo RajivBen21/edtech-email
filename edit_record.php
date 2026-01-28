@@ -10,6 +10,25 @@ if (!isset($_SESSION['user_id'])) {
 $success = '';
 $error = '';
 
+// Check if ID is provided
+if (!isset($_GET['id']) || empty($_GET['id'])) {
+    header('Location: records.php');
+    exit;
+}
+
+$record_id = (int)$_GET['id'];
+
+// Get the record
+$stmt = $pdo->prepare("SELECT * FROM email_records WHERE record_id = ?");
+$stmt->execute([$record_id]);
+$record = $stmt->fetch();
+
+// If record not found, redirect
+if (!$record) {
+    header('Location: records.php?error=not_found');
+    exit;
+}
+
 // Get departments for dropdown
 $stmt = $pdo->query("SELECT * FROM departments ORDER BY department_name");
 $departments = $stmt->fetchAll();
@@ -26,7 +45,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $account_status = $_POST['account_status'];
     $request_type = $_POST['request_type'];
     $notes = trim($_POST['notes']);
-    $recorded_by = $_SESSION['full_name'];
     
     // Validate required fields
     if (empty($college_department) || empty($last_name) || empty($first_name)) {
@@ -34,9 +52,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } else {
         try {
             $stmt = $pdo->prepare("
-                INSERT INTO email_records 
-                (college_department, last_name, first_name, middle_name, email, password, record_date, account_status, request_type, recorded_by, notes)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                UPDATE email_records SET
+                    college_department = ?,
+                    last_name = ?,
+                    first_name = ?,
+                    middle_name = ?,
+                    email = ?,
+                    password = ?,
+                    record_date = ?,
+                    account_status = ?,
+                    request_type = ?,
+                    notes = ?
+                WHERE record_id = ?
             ");
             $stmt->execute([
                 $college_department,
@@ -48,26 +75,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $record_date,
                 $account_status,
                 $request_type,
-                $recorded_by,
-                $notes
+                $notes,
+                $record_id
             ]);
             
-            $success = 'Record added successfully!';
+            $success = 'Record updated successfully!';
             
-            // Clear form by redirecting
-            if (isset($_POST['save_and_new'])) {
-                header('Location: add_record.php?success=1');
-                exit;
-            }
+            // Refresh the record data
+            $stmt = $pdo->prepare("SELECT * FROM email_records WHERE record_id = ?");
+            $stmt->execute([$record_id]);
+            $record = $stmt->fetch();
+            
         } catch (Exception $e) {
-            $error = 'Error adding record: ' . $e->getMessage();
+            $error = 'Error updating record: ' . $e->getMessage();
         }
     }
-}
-
-// Check for success message from redirect
-if (isset($_GET['success'])) {
-    $success = 'Record added successfully! You can add another record.';
 }
 ?>
 <!DOCTYPE html>
@@ -75,7 +97,7 @@ if (isset($_GET['success'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Record - LDCU Email System</title>
+    <title>Edit Record - LDCU Email System</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -92,8 +114,8 @@ if (isset($_GET['success'])) {
         </div>
         <nav class="nav-menu">
             <a href="dashboard.php">Dashboard</a>
-            <a href="add_record.php" class="active">Add Record</a>
-            <a href="records.php">All Records</a>
+            <a href="add_record.php">Add Record</a>
+            <a href="records.php" class="active">All Records</a>
             <a href="import.php">Import CSV</a>
             <a href="logout.php">Logout (<?php echo $_SESSION['username']; ?>)</a>
         </nav>
@@ -103,7 +125,7 @@ if (isset($_GET['success'])) {
     <div class="container">
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">Add New Email Record</h3>
+                <h3 class="card-title">Edit Email Record #<?php echo $record_id; ?></h3>
             </div>
             
             <?php if ($success): ?>
@@ -121,10 +143,25 @@ if (isset($_GET['success'])) {
                     <select name="college_department" id="college_department" class="form-control" required>
                         <option value="">-- Select Department --</option>
                         <?php foreach ($departments as $dept): ?>
-                            <option value="<?php echo htmlspecialchars($dept['department_name']); ?>">
+                            <option value="<?php echo htmlspecialchars($dept['department_name']); ?>"
+                                    <?php echo $record['college_department'] == $dept['department_name'] ? 'selected' : ''; ?>>
                                 <?php echo htmlspecialchars($dept['department_name']); ?>
                             </option>
                         <?php endforeach; ?>
+                        <?php 
+                        // If current value is not in departments list, add it as an option
+                        $found = false;
+                        foreach ($departments as $dept) {
+                            if ($dept['department_name'] == $record['college_department']) {
+                                $found = true;
+                                break;
+                            }
+                        }
+                        if (!$found && !empty($record['college_department'])): ?>
+                            <option value="<?php echo htmlspecialchars($record['college_department']); ?>" selected>
+                                <?php echo htmlspecialchars($record['college_department']); ?>
+                            </option>
+                        <?php endif; ?>
                     </select>
                 </div>
                 
@@ -133,16 +170,19 @@ if (isset($_GET['success'])) {
                     <div class="form-group">
                         <label for="last_name">Last Name *</label>
                         <input type="text" name="last_name" id="last_name" class="form-control" 
+                               value="<?php echo htmlspecialchars($record['last_name']); ?>"
                                placeholder="e.g., Dela Cruz" required>
                     </div>
                     <div class="form-group">
                         <label for="first_name">First Name *</label>
                         <input type="text" name="first_name" id="first_name" class="form-control" 
+                               value="<?php echo htmlspecialchars($record['first_name']); ?>"
                                placeholder="e.g., Juan" required>
                     </div>
                     <div class="form-group">
                         <label for="middle_name">Middle Name</label>
                         <input type="text" name="middle_name" id="middle_name" class="form-control" 
+                               value="<?php echo htmlspecialchars($record['middle_name']); ?>"
                                placeholder="e.g., Santos">
                     </div>
                 </div>
@@ -152,11 +192,13 @@ if (isset($_GET['success'])) {
                     <div class="form-group">
                         <label for="email">Email Address</label>
                         <input type="email" name="email" id="email" class="form-control" 
+                               value="<?php echo htmlspecialchars($record['email']); ?>"
                                placeholder="e.g., juan.delacruz@ldcu.edu.ph">
                     </div>
                     <div class="form-group">
                         <label for="password">Password</label>
                         <input type="text" name="password" id="password" class="form-control" 
+                               value="<?php echo htmlspecialchars($record['password']); ?>"
                                placeholder="Initial password">
                     </div>
                 </div>
@@ -166,20 +208,20 @@ if (isset($_GET['success'])) {
                     <div class="form-group">
                         <label for="record_date">Record Date</label>
                         <input type="date" name="record_date" id="record_date" class="form-control" 
-                               value="<?php echo date('Y-m-d'); ?>">
+                               value="<?php echo $record['record_date']; ?>">
                     </div>
                     <div class="form-group">
                         <label for="account_status">Account Status</label>
                         <select name="account_status" id="account_status" class="form-control">
-                            <option value="Activate">Activate</option>
-                            <option value="Deactivated">Deactivated</option>
+                            <option value="Activate" <?php echo $record['account_status'] == 'Activate' ? 'selected' : ''; ?>>Activate</option>
+                            <option value="Deactivated" <?php echo $record['account_status'] == 'Deactivated' ? 'selected' : ''; ?>>Deactivated</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="request_type">Request Type</label>
                         <select name="request_type" id="request_type" class="form-control">
-                            <option value="New">New Account</option>
-                            <option value="Activate">Activate Account</option>
+                            <option value="New" <?php echo $record['request_type'] == 'New' ? 'selected' : ''; ?>>New Account</option>
+                            <option value="Activate" <?php echo $record['request_type'] == 'Activate' ? 'selected' : ''; ?>>Activate Account</option>
                         </select>
                     </div>
                 </div>
@@ -188,14 +230,21 @@ if (isset($_GET['success'])) {
                 <div class="form-group">
                     <label for="notes">Notes / Remarks</label>
                     <textarea name="notes" id="notes" class="form-control" rows="3" 
-                              placeholder="Any additional notes..."></textarea>
+                              placeholder="Any additional notes..."><?php echo htmlspecialchars($record['notes'] ?? ''); ?></textarea>
+                </div>
+                
+                <!-- Record Info -->
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <p style="margin: 0; font-size: 13px; color: #666;">
+                        <strong>Recorded by:</strong> <?php echo htmlspecialchars($record['recorded_by'] ?? 'N/A'); ?> | 
+                        <strong>Created:</strong> <?php echo $record['created_at'] ? date('M d, Y h:i A', strtotime($record['created_at'])) : 'N/A'; ?>
+                    </p>
                 </div>
                 
                 <!-- Buttons -->
                 <div style="display: flex; gap: 15px; margin-top: 20px;">
-                    <button type="submit" name="save" class="btn btn-primary">Save Record</button>
-                    <button type="submit" name="save_and_new" class="btn btn-success">Save & Add Another</button>
-                    <a href="dashboard.php" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Update Record</button>
+                    <a href="records.php" class="btn btn-secondary">Cancel</a>
                 </div>
             </form>
         </div>

@@ -44,11 +44,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['csv_file'])) {
                 $email = isset($data[4]) ? trim($data[4]) : '';
                 $password = isset($data[5]) ? trim($data[5]) : '';
                 $record_date = isset($data[6]) ? trim($data[6]) : date('Y-m-d');
-                $account_status = isset($data[7]) ? trim($data[7]) : 'Active';
+                $account_status = isset($data[7]) ? trim($data[7]) : 'Activate';
                 
                 // Validate account_status
-                if (!in_array($account_status, ['Active', 'Deactivated'])) {
-                    $account_status = 'Active';
+                if (!in_array($account_status, ['Activate', 'Deactivated'])) {
+                    $account_status = 'Activate';
                 }
                 
                 // Format date if needed
@@ -171,43 +171,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['csv_file'])) {
                             <td>j.delacruz@ldcu.edu.ph</td>
                             <td>pass123</td>
                             <td>2026-01-15</td>
-                            <td>Active</td>
+                            <td>Activate</td>
                         </tr>
                     </tbody>
                 </table>
                 <p style="font-size: 13px; color: #666;">
-                    <strong>Note:</strong> account_status should be either "Active" or "Deactivated"
+                    <strong>Note:</strong> account_status should be either "Activate" or "Deactivated"
                 </p>
-            </div>
             
-            <form method="POST" action="" enctype="multipart/form-data">
-                <div class="form-group">
-                    <label for="csv_file">Select CSV File</label>
-                    <input type="file" name="csv_file" id="csv_file" class="form-control" 
-                           accept=".csv" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" name="has_header" checked>
-                        First row is header (skip first row)
-                    </label>
-                </div>
-                
-                <div style="display: flex; gap: 15px; margin-top: 20px;">
-                    <button type="submit" class="btn btn-primary">Import Records</button>
-                    <a href="dashboard.php" class="btn btn-secondary">Cancel</a>
-                </div>
-            </form>
-        </div>
-        
-        <?php if ($imported_count > 0): ?>
-        <div class="card">
-            <p style="text-align: center;">
-                <a href="records.php" class="btn btn-success">View Imported Records</a>
-            </p>
-        </div>
-        <?php endif; ?>
-    </div>
-</body>
-</html>

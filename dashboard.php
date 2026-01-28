@@ -14,9 +14,9 @@ $stats = [];
 $stmt = $pdo->query("SELECT COUNT(*) as count FROM email_records");
 $stats['total'] = $stmt->fetch()['count'];
 
-// Active accounts
-$stmt = $pdo->query("SELECT COUNT(*) as count FROM email_records WHERE account_status = 'Active'");
-$stats['active'] = $stmt->fetch()['count'];
+// Activate accounts
+$stmt = $pdo->query("SELECT COUNT(*) as count FROM email_records WHERE account_status = 'Activate'");
+$stats['activate'] = $stmt->fetch()['count'];
 
 // Deactivated accounts
 $stmt = $pdo->query("SELECT COUNT(*) as count FROM email_records WHERE account_status = 'Deactivated'");
@@ -74,8 +74,8 @@ $recent_records = $stmt->fetchAll();
                 <div class="stat-label">Total Records</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number"><?php echo $stats['active']; ?></div>
-                <div class="stat-label">Active Accounts</div>
+                <div class="stat-number"><?php echo $stats['activate']; ?></div>
+                <div class="stat-label">Activate Accounts</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number"><?php echo $stats['deactivated']; ?></div>
@@ -96,7 +96,6 @@ $recent_records = $stmt->fetchAll();
                 <a href="add_record.php" class="btn btn-primary">+ Add New Record</a>
                 <a href="records.php" class="btn btn-secondary">View All Records</a>
                 <a href="import.php" class="btn btn-secondary">Import from CSV</a>
-                <a href="search.php" class="btn btn-secondary">Search Records</a>
             </div>
         </div>
 
@@ -130,7 +129,7 @@ $recent_records = $stmt->fetchAll();
                             <td><?php echo htmlspecialchars($record['college_department']); ?></td>
                             <td><?php echo htmlspecialchars($record['email']); ?></td>
                             <td>
-                                <span class="badge badge-<?php echo $record['account_status'] == 'Active' ? 'approved' : 'rejected'; ?>">
+                                <span class="badge badge-<?php echo $record['account_status'] == 'Activate' ? 'approved' : 'rejected'; ?>">
                                     <?php echo $record['account_status']; ?>
                                 </span>
                             </td>

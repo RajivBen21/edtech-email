@@ -246,7 +246,7 @@ $departments = $stmt->fetchAll();
                 
                 <select name="status" class="form-control" style="width: auto;">
                     <option value="">All Status</option>
-                    <option value="Active" <?php echo $filter_status == 'Active' ? 'selected' : ''; ?>>Active</option>
+                    <option value="Activate" <?php echo $filter_status == 'Activate' ? 'selected' : ''; ?>>Activate</option>
                     <option value="Deactivated" <?php echo $filter_status == 'Deactivated' ? 'selected' : ''; ?>>Deactivated</option>
                 </select>
                 
@@ -259,8 +259,8 @@ $departments = $stmt->fetchAll();
             
             <?php if (count($records) > 0): ?>
             
-            <!-- Export Form -->
-            <form method="POST" action="export_word.php" id="exportForm">
+            <!-- Export Form - Changed to preview_export.php -->
+            <form method="POST" action="preview_export.php" id="exportForm">
                 <div class="export-bar">
                     <label>Export Selected:</label>
                     <select name="request_type" class="form-control" style="width: auto;">
@@ -321,7 +321,7 @@ $departments = $stmt->fetchAll();
                                 <td><?php echo htmlspecialchars($record['password']); ?></td>
                                 <td><?php echo $record['record_date'] ? date('M d, Y', strtotime($record['record_date'])) : '-'; ?></td>
                                 <td>
-                                    <span class="badge badge-<?php echo $record['account_status'] == 'Active' ? 'approved' : 'rejected'; ?>">
+                                    <span class="badge badge-<?php echo $record['account_status'] == 'Activate' ? 'approved' : 'rejected'; ?>">
                                         <?php echo $record['account_status']; ?>
                                     </span>
                                 </td>

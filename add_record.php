@@ -1,4 +1,4 @@
-<?php
+    <?php
 require_once 'includes/db_connect.php';
 
 // Check if user is logged in

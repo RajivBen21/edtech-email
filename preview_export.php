@@ -152,9 +152,7 @@ function formatDateTime($datetime) {
         </div>
         <nav class="nav-menu">
             <a href="dashboard.php">Dashboard</a>
-            <a href="add_record.php">Add Record</a>
             <a href="records.php" class="active">All Records</a>
-            <a href="import.php">Import CSV</a>
             <a href="logout.php">Logout (<?php echo htmlspecialchars($_SESSION['username']); ?>)</a>
         </nav>
     </div>

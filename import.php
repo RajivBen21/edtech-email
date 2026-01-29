@@ -106,9 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['csv_file'])) {
         </div>
         <nav class="nav-menu">
             <a href="dashboard.php">Dashboard</a>
-            <a href="add_record.php">Add Record</a>
             <a href="records.php">All Records</a>
-            <a href="import.php" class="active">Import CSV</a>
             <a href="logout.php">Logout (<?php echo $_SESSION['username']; ?>)</a>
         </nav>
     </div>

@@ -100,9 +100,7 @@ if (isset($_GET['success'])) {
         </div>
         <nav class="nav-menu">
             <a href="dashboard.php">Dashboard</a>
-            <a href="add_record.php" class="active">Add Record</a>
             <a href="records.php">All Records</a>
-            <a href="import.php">Import CSV</a>
             <a href="logout.php">Logout (<?php echo $_SESSION['username']; ?>)</a>
         </nav>
     </div>

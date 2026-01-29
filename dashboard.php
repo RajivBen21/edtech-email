@@ -46,15 +46,13 @@ $recent_records = $stmt->fetchAll();
     <div class="header">
         <div class="header-left">
             <div>
-                <h1>LDCU EdTech Email System</h1>
-                <div class="header-subtitle">Educational Technology Center</div>
+                <h1>Educational Technology Center</h1>
+                <div class="header-subtitle">Liceo de Cagayan University</div>
             </div>
         </div>
         <nav class="nav-menu">
             <a href="dashboard.php" class="active">Dashboard</a>
-            <a href="add_record.php">Add Record</a>
             <a href="records.php">All Records</a>
-            <a href="import.php">Import CSV</a>
             <a href="logout.php">Logout (<?php echo $_SESSION['username']; ?>)</a>
         </nav>
     </div>

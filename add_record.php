@@ -28,6 +28,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $notes = trim($_POST['notes']);
     $recorded_by = $_SESSION['full_name'];
     
+    // Date/Time tracking fields
+    $datetime_received = !empty($_POST['datetime_received']) ? $_POST['datetime_received'] : null;
+    $datetime_processed = !empty($_POST['datetime_processed']) ? $_POST['datetime_processed'] : null;
+    $datetime_accomplished = !empty($_POST['datetime_accomplished']) ? $_POST['datetime_accomplished'] : null;
+    
     // Validate required fields
     if (empty($college_department) || empty($last_name) || empty($first_name)) {
         $error = 'Please fill in all required fields (Department, Last Name, First Name).';
@@ -35,8 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         try {
             $stmt = $pdo->prepare("
                 INSERT INTO email_records 
-                (college_department, last_name, first_name, middle_name, email, password, record_date, account_status, request_type, recorded_by, notes)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (college_department, last_name, first_name, middle_name, email, password, record_date, account_status, request_type, recorded_by, notes, datetime_received, datetime_processed, datetime_accomplished)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
             $stmt->execute([
                 $college_department,
@@ -49,7 +54,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $account_status,
                 $request_type,
                 $recorded_by,
-                $notes
+                $notes,
+                $datetime_received,
+                $datetime_processed,
+                $datetime_accomplished
             ]);
             
             $success = 'Record added successfully!';
@@ -184,6 +192,35 @@ if (isset($_GET['success'])) {
                     </div>
                 </div>
                 
+                <!-- Date/Time Tracking Section -->
+                <div class="card-header" style="margin-top: 20px; margin-bottom: 15px;">
+                    <h3 class="card-title">📅 Request Status Tracking</h3>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="datetime_received">Date/Time Received</label>
+                        <div class="datetime-input-group">
+                            <input type="datetime-local" name="datetime_received" id="datetime_received" class="form-control">
+                            <button type="button" class="btn btn-sm btn-received" onclick="setCurrentDateTime('datetime_received')">Now</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="datetime_processed">Date/Time Processed</label>
+                        <div class="datetime-input-group">
+                            <input type="datetime-local" name="datetime_processed" id="datetime_processed" class="form-control">
+                            <button type="button" class="btn btn-sm btn-processing" onclick="setCurrentDateTime('datetime_processed')">Now</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="datetime_accomplished">Date/Time Accomplished</label>
+                        <div class="datetime-input-group">
+                            <input type="datetime-local" name="datetime_accomplished" id="datetime_accomplished" class="form-control">
+                            <button type="button" class="btn btn-sm btn-accomplished" onclick="setCurrentDateTime('datetime_accomplished')">Now</button>
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- Notes -->
                 <div class="form-group">
                     <label for="notes">Notes / Remarks</label>
@@ -200,5 +237,19 @@ if (isset($_GET['success'])) {
             </form>
         </div>
     </div>
+    
+    <script>
+        function setCurrentDateTime(fieldId) {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            
+            const dateTimeString = `${year}-${month}-${day}T${hours}:${minutes}`;
+            document.getElementById(fieldId).value = dateTimeString;
+        }
+    </script>
 </body>
 </html>

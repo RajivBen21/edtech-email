@@ -45,9 +45,22 @@ $department_mapping = [
     'GUID' => 'Guidance'
 ];
 
+// Helper function to get request status
+function getRequestStatus($record) {
+    if (!empty($record['datetime_accomplished'])) {
+        return ['status' => 'accomplished', 'label' => 'Accomplished', 'class' => 'badge-accomplished'];
+    } elseif (!empty($record['datetime_processed'])) {
+        return ['status' => 'processing', 'label' => 'Processing', 'class' => 'badge-processing'];
+    } elseif (!empty($record['datetime_received'])) {
+        return ['status' => 'received', 'label' => 'Received', 'class' => 'badge-received'];
+    }
+    return ['status' => 'pending', 'label' => 'Pending', 'class' => 'badge-pending'];
+}
+
 // Get filter values
 $filter_department = isset($_GET['department']) ? $_GET['department'] : '';
 $filter_status = isset($_GET['status']) ? $_GET['status'] : '';
+$filter_request_status = isset($_GET['request_status']) ? $_GET['request_status'] : '';
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
 // Pagination settings
@@ -81,6 +94,24 @@ if (!empty($filter_department)) {
 if (!empty($filter_status)) {
     $sql .= " AND account_status = ?";
     $params[] = $filter_status;
+}
+
+// Filter by request status
+if (!empty($filter_request_status)) {
+    switch ($filter_request_status) {
+        case 'pending':
+            $sql .= " AND datetime_received IS NULL";
+            break;
+        case 'received':
+            $sql .= " AND datetime_received IS NOT NULL AND datetime_processed IS NULL";
+            break;
+        case 'processing':
+            $sql .= " AND datetime_processed IS NOT NULL AND datetime_accomplished IS NULL";
+            break;
+        case 'accomplished':
+            $sql .= " AND datetime_accomplished IS NOT NULL";
+            break;
+    }
 }
 
 if (!empty($search)) {
@@ -170,9 +201,17 @@ $departments = $stmt->fetchAll();
                 </select>
                 
                 <select name="status" class="form-control" style="width: auto;">
-                    <option value="">All Status</option>
+                    <option value="">All Account Status</option>
                     <option value="Active" <?php echo $filter_status == 'Active' ? 'selected' : ''; ?>>Activated</option>   
                     <option value="Deactivated" <?php echo $filter_status == 'Deactivated' ? 'selected' : ''; ?>>Deactivated</option>
+                </select>
+                
+                <select name="request_status" class="form-control" style="width: auto;">
+                    <option value="">All Request Status</option>
+                    <option value="pending" <?php echo $filter_request_status == 'pending' ? 'selected' : ''; ?>>Pending</option>
+                    <option value="received" <?php echo $filter_request_status == 'received' ? 'selected' : ''; ?>>Received</option>
+                    <option value="processing" <?php echo $filter_request_status == 'processing' ? 'selected' : ''; ?>>Processing</option>
+                    <option value="accomplished" <?php echo $filter_request_status == 'accomplished' ? 'selected' : ''; ?>>Accomplished</option>
                 </select>
                 
                 <input type="text" name="search" placeholder="Search name, email, or department..." 
@@ -193,7 +232,7 @@ $departments = $stmt->fetchAll();
                         <option value="Activate">Activate</option>
                     </select>
                     <button type="submit" class="btn btn-success">📄 Export to Word</button>
-                    <span class="select-count"><span id="selectedCount">0</span> selected (max 5)</span>
+                    <span class="select-count"><span id="selectedCount">0</span> selected</span>
                 </div>
             
                 <!-- Records Table -->
@@ -208,9 +247,8 @@ $departments = $stmt->fetchAll();
                                 <th>Name</th>
                                 <th>Department</th>
                                 <th>Email</th>
-                                <th>Password</th>
-                                <th>Date</th>
-                                <th>Status</th>
+                                <th>Request Status</th>
+                                <th>Account Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -221,6 +259,7 @@ $departments = $stmt->fetchAll();
                             foreach ($records as $record): 
                                 $dept_display = $record['college_department'];
                                 $dept_full = isset($department_mapping[$dept_display]) ? $department_mapping[$dept_display] : '';
+                                $request_status = getRequestStatus($record);
                             ?>
                             <tr>
                                 <td class="checkbox-cell">
@@ -241,8 +280,11 @@ $departments = $stmt->fetchAll();
                                     <?php endif; ?>
                                 </td>
                                 <td><?php echo htmlspecialchars($record['email']); ?></td>
-                                <td><?php echo htmlspecialchars($record['password']); ?></td>
-                                <td><?php echo $record['record_date'] ? date('M d, Y', strtotime($record['record_date'])) : '-'; ?></td>
+                                <td>
+                                    <span class="badge <?php echo $request_status['class']; ?>">
+                                        <?php echo $request_status['label']; ?>
+                                    </span>
+                                </td>
                                 <td>
                                     <span class="badge badge-<?php echo $record['account_status'] == 'Active' ? 'approved' : 'rejected'; ?>">
                                         <?php echo $record['account_status'] == 'Active' ? 'Activated' : 'Deactivated'; ?>
@@ -268,6 +310,7 @@ $departments = $stmt->fetchAll();
                 $query_params = [];
                 if ($filter_department) $query_params['department'] = $filter_department;
                 if ($filter_status) $query_params['status'] = $filter_status;
+                if ($filter_request_status) $query_params['request_status'] = $filter_request_status;
                 if ($search) $query_params['search'] = $search;
                 $query_string = http_build_query($query_params);
                 $query_string = $query_string ? '&' . $query_string : '';
@@ -326,16 +369,9 @@ $departments = $stmt->fetchAll();
     <script>
         document.getElementById('selectAll').addEventListener('change', function() {
             const checkboxes = document.querySelectorAll('.record-checkbox');
-            const maxSelect = 5;
-            let count = 0;
             
             checkboxes.forEach(checkbox => {
-                if (this.checked && count < maxSelect) {
-                    checkbox.checked = true;
-                    count++;
-                } else if (!this.checked) {
-                    checkbox.checked = false;
-                }
+                checkbox.checked = this.checked;
             });
             
             updateCount();
@@ -343,13 +379,6 @@ $departments = $stmt->fetchAll();
 
         document.querySelectorAll('.record-checkbox').forEach(checkbox => {
             checkbox.addEventListener('change', function() {
-                const checked = document.querySelectorAll('.record-checkbox:checked');
-                
-                if (checked.length > 5) {
-                    this.checked = false;
-                    alert('You can only select up to 5 records at a time (template has 5 rows).');
-                }
-                
                 updateCount();
             });
         });

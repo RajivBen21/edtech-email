@@ -57,6 +57,118 @@ function getRequestStatus($record) {
     return ['status' => 'pending', 'label' => 'Pending', 'class' => 'badge-pending'];
 }
 
+// Handle delete action
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
+    
+    // Delete single record
+    if ($_POST['action'] == 'delete_single' && isset($_POST['record_id'])) {
+        $record_id = (int)$_POST['record_id'];
+        
+        // Get record data before deleting (for undo)
+        $stmt = $pdo->prepare("SELECT * FROM email_records WHERE record_id = ?");
+        $stmt->execute([$record_id]);
+        $deleted_record = $stmt->fetch();
+        
+        if ($deleted_record) {
+            // Store in session for undo
+            $_SESSION['deleted_records'] = [$deleted_record];
+            $_SESSION['delete_time'] = time();
+            
+            // Delete the record
+            $stmt = $pdo->prepare("DELETE FROM email_records WHERE record_id = ?");
+            $stmt->execute([$record_id]);
+            
+            header('Location: records.php?deleted=1&count=1');
+            exit;
+        }
+    }
+    
+    // Delete multiple records
+    if ($_POST['action'] == 'delete_multiple' && isset($_POST['selected_records'])) {
+        $selected_ids = $_POST['selected_records'];
+        $count = count($selected_ids);
+        
+        if ($count > 0) {
+            // Get records data before deleting (for undo)
+            $placeholders = str_repeat('?,', $count - 1) . '?';
+            $stmt = $pdo->prepare("SELECT * FROM email_records WHERE record_id IN ($placeholders)");
+            $stmt->execute($selected_ids);
+            $deleted_records = $stmt->fetchAll();
+            
+            // Store in session for undo
+            $_SESSION['deleted_records'] = $deleted_records;
+            $_SESSION['delete_time'] = time();
+            
+            // Delete the records
+            $stmt = $pdo->prepare("DELETE FROM email_records WHERE record_id IN ($placeholders)");
+            $stmt->execute($selected_ids);
+            
+            header('Location: records.php?deleted=1&count=' . $count);
+            exit;
+        }
+    }
+    
+    // Undo delete
+    if ($_POST['action'] == 'undo_delete' && isset($_SESSION['deleted_records'])) {
+        $deleted_records = $_SESSION['deleted_records'];
+        $restored_count = 0;
+        
+        foreach ($deleted_records as $record) {
+            try {
+                $stmt = $pdo->prepare("
+                    INSERT INTO email_records 
+                    (record_id, college_department, last_name, first_name, middle_name, email, password, 
+                     record_date, account_status, request_type, recorded_by, notes, created_at,
+                     datetime_received, datetime_processed, datetime_accomplished)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ");
+                $stmt->execute([
+                    $record['record_id'],
+                    $record['college_department'],
+                    $record['last_name'],
+                    $record['first_name'],
+                    $record['middle_name'],
+                    $record['email'],
+                    $record['password'],
+                    $record['record_date'],
+                    $record['account_status'],
+                    $record['request_type'],
+                    $record['recorded_by'],
+                    $record['notes'],
+                    $record['created_at'],
+                    $record['datetime_received'],
+                    $record['datetime_processed'],
+                    $record['datetime_accomplished']
+                ]);
+                $restored_count++;
+            } catch (Exception $e) {
+                // Record might already exist or other error
+            }
+        }
+        
+        // Clear session
+        unset($_SESSION['deleted_records']);
+        unset($_SESSION['delete_time']);
+        
+        header('Location: records.php?restored=' . $restored_count);
+        exit;
+    }
+}
+
+// Check if undo should still be available (within 30 seconds)
+$show_undo = false;
+if (isset($_SESSION['deleted_records']) && isset($_SESSION['delete_time'])) {
+    $time_elapsed = time() - $_SESSION['delete_time'];
+    if ($time_elapsed <= 30) {
+        $show_undo = true;
+        $undo_time_remaining = 30 - $time_elapsed;
+    } else {
+        // Clear expired undo data
+        unset($_SESSION['deleted_records']);
+        unset($_SESSION['delete_time']);
+    }
+}
+
 // Get filter values
 $filter_department = isset($_GET['department']) ? $_GET['department'] : '';
 $filter_status = isset($_GET['status']) ? $_GET['status'] : '';
@@ -68,10 +180,22 @@ $records_per_page = 50;
 $current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 if ($current_page < 1) $current_page = 1;
 
-// Check for errors
+// Check for messages
 $error = '';
+$success = '';
+
 if (isset($_GET['error']) && $_GET['error'] == 'no_selection') {
     $error = 'Please select at least one record to export.';
+}
+
+if (isset($_GET['deleted']) && isset($_GET['count'])) {
+    $count = (int)$_GET['count'];
+    $success = $count . ' record' . ($count > 1 ? 's' : '') . ' deleted successfully.';
+}
+
+if (isset($_GET['restored'])) {
+    $count = (int)$_GET['restored'];
+    $success = $count . ' record' . ($count > 1 ? 's' : '') . ' restored successfully.';
 }
 
 // Build query
@@ -157,6 +281,158 @@ $departments = $stmt->fetchAll();
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Delete button styles */
+        .action-btn.delete {
+            background: #e53e3e;
+            color: white;
+        }
+        .action-btn.delete:hover {
+            background: #c53030;
+        }
+        
+        /* Undo toast notification */
+        .undo-toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a365d;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 1000;
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+        
+        .undo-toast .undo-message {
+            font-size: 14px;
+        }
+        
+        .undo-toast .undo-btn {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        
+        .undo-toast .undo-btn:hover {
+            background: #3182ce;
+        }
+        
+        .undo-toast .undo-timer {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .undo-toast .close-toast {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            opacity: 0.7;
+            padding: 0 5px;
+        }
+        
+        .undo-toast .close-toast:hover {
+            opacity: 1;
+        }
+        
+        /* Delete confirmation modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        .modal h3 {
+            color: #1a365d;
+            margin-bottom: 15px;
+        }
+        
+        .modal p {
+            color: #666;
+            margin-bottom: 25px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        
+        .btn-danger {
+            background: #e53e3e;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c53030;
+        }
+        
+        /* Delete selected bar */
+        .delete-bar {
+            background: #fed7d7;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid #feb2b2;
+        }
+        
+        .delete-bar.show {
+            display: flex;
+        }
+        
+        .delete-bar span {
+            color: #c53030;
+            font-weight: 600;
+        }
+    </style>
 </head>
 <body>
     <!-- Header -->
@@ -186,6 +462,10 @@ $departments = $stmt->fetchAll();
             
             <?php if ($error): ?>
                 <div class="alert alert-error"><?php echo $error; ?></div>
+            <?php endif; ?>
+            
+            <?php if ($success): ?>
+                <div class="alert alert-success"><?php echo $success; ?></div>
             <?php endif; ?>
             
             <!-- Filters -->
@@ -222,6 +502,13 @@ $departments = $stmt->fetchAll();
             </form>
             
             <?php if (count($records) > 0): ?>
+            
+            <!-- Delete Selected Bar -->
+            <div class="delete-bar" id="deleteBar">
+                <span>🗑️ <span id="deleteCount">0</span> record(s) selected</span>
+                <button type="button" class="btn btn-danger" onclick="confirmDeleteMultiple()">Delete Selected</button>
+                <button type="button" class="btn btn-secondary" onclick="clearSelection()">Cancel</button>
+            </div>
             
             <!-- Export Form -->
             <form method="POST" action="preview_export.php" id="exportForm">
@@ -294,6 +581,10 @@ $departments = $stmt->fetchAll();
                                     <div class="action-btns">
                                         <a href="edit_record.php?id=<?php echo $record['record_id']; ?>" 
                                            class="action-btn edit">Edit</a>
+                                        <button type="button" class="action-btn delete" 
+                                                onclick="confirmDeleteSingle(<?php echo $record['record_id']; ?>, '<?php echo htmlspecialchars($record['last_name'] . ', ' . $record['first_name']); ?>')">
+                                            Delete
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -366,27 +657,155 @@ $departments = $stmt->fetchAll();
         </div>
     </div>
 
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal">
+            <h3>⚠️ Confirm Delete</h3>
+            <p id="deleteMessage">Are you sure you want to delete this record?</p>
+            <div class="modal-buttons">
+                <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+                <form method="POST" action="" id="deleteForm" style="display: inline;">
+                    <input type="hidden" name="action" id="deleteAction" value="delete_single">
+                    <input type="hidden" name="record_id" id="deleteRecordId" value="">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Undo Toast -->
+    <?php if ($show_undo && isset($_GET['deleted'])): ?>
+    <div class="undo-toast" id="undoToast">
+        <span class="undo-message">
+            <?php echo count($_SESSION['deleted_records']); ?> record(s) deleted
+        </span>
+        <form method="POST" action="" style="display: inline;">
+            <input type="hidden" name="action" value="undo_delete">
+            <button type="submit" class="undo-btn">↩ Undo</button>
+        </form>
+        <span class="undo-timer" id="undoTimer"><?php echo $undo_time_remaining; ?>s</span>
+        <button type="button" class="close-toast" onclick="closeUndoToast()">×</button>
+    </div>
+    
     <script>
+        // Countdown timer for undo
+        let timeRemaining = <?php echo $undo_time_remaining; ?>;
+        const timerInterval = setInterval(function() {
+            timeRemaining--;
+            document.getElementById('undoTimer').textContent = timeRemaining + 's';
+            
+            if (timeRemaining <= 0) {
+                clearInterval(timerInterval);
+                closeUndoToast();
+            }
+        }, 1000);
+        
+        function closeUndoToast() {
+            const toast = document.getElementById('undoToast');
+            if (toast) {
+                toast.style.display = 'none';
+            }
+        }
+    </script>
+    <?php endif; ?>
+
+    <script>
+        // Select all functionality
         document.getElementById('selectAll').addEventListener('change', function() {
             const checkboxes = document.querySelectorAll('.record-checkbox');
-            
             checkboxes.forEach(checkbox => {
                 checkbox.checked = this.checked;
             });
-            
             updateCount();
         });
 
+        // Individual checkbox change
         document.querySelectorAll('.record-checkbox').forEach(checkbox => {
             checkbox.addEventListener('change', function() {
                 updateCount();
             });
         });
 
+        // Update selected count and show/hide delete bar
         function updateCount() {
             const checked = document.querySelectorAll('.record-checkbox:checked');
-            document.getElementById('selectedCount').textContent = checked.length;
+            const count = checked.length;
+            
+            document.getElementById('selectedCount').textContent = count;
+            document.getElementById('deleteCount').textContent = count;
+            
+            const deleteBar = document.getElementById('deleteBar');
+            if (count > 0) {
+                deleteBar.classList.add('show');
+            } else {
+                deleteBar.classList.remove('show');
+            }
         }
+
+        // Clear selection
+        function clearSelection() {
+            document.querySelectorAll('.record-checkbox').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            document.getElementById('selectAll').checked = false;
+            updateCount();
+        }
+
+        // Confirm delete single record
+        function confirmDeleteSingle(recordId, recordName) {
+            document.getElementById('deleteMessage').textContent = 
+                'Are you sure you want to delete "' + recordName + '"?';
+            document.getElementById('deleteAction').value = 'delete_single';
+            document.getElementById('deleteRecordId').value = recordId;
+            document.getElementById('deleteForm').innerHTML = 
+                '<input type="hidden" name="action" value="delete_single">' +
+                '<input type="hidden" name="record_id" value="' + recordId + '">' +
+                '<button type="submit" class="btn btn-danger">Delete</button>';
+            document.getElementById('deleteModal').classList.add('active');
+        }
+
+        // Confirm delete multiple records
+        function confirmDeleteMultiple() {
+            const checked = document.querySelectorAll('.record-checkbox:checked');
+            const count = checked.length;
+            
+            if (count === 0) {
+                alert('Please select at least one record to delete.');
+                return;
+            }
+            
+            document.getElementById('deleteMessage').textContent = 
+                'Are you sure you want to delete ' + count + ' selected record(s)?';
+            
+            // Build form with selected IDs
+            let formHtml = '<input type="hidden" name="action" value="delete_multiple">';
+            checked.forEach(checkbox => {
+                formHtml += '<input type="hidden" name="selected_records[]" value="' + checkbox.value + '">';
+            });
+            formHtml += '<button type="submit" class="btn btn-danger">Delete ' + count + ' Record(s)</button>';
+            
+            document.getElementById('deleteForm').innerHTML = formHtml;
+            document.getElementById('deleteModal').classList.add('active');
+        }
+
+        // Close delete modal
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('active');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('deleteModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeDeleteModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeDeleteModal();
+            }
+        });
     </script>
 </body>
 </html>

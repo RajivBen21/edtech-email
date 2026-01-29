@@ -1,8 +1,14 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 require_once 'includes/db_connect.php';
 require_once 'vendor/autoload.php';
 
 use PhpOffice\PhpWord\TemplateProcessor;
+
+// Set custom temp directory
+putenv('TMPDIR=' . __DIR__ . '/temp');
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {

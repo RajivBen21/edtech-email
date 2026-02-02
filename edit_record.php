@@ -200,26 +200,6 @@ $current_status = getRequestStatus($record);
                 <div class="alert alert-error"><?php echo $error; ?></div>
             <?php endif; ?>
             
-            <!-- Quick Action Buttons -->
-            <div class="quick-actions">
-                <span class="quick-actions-label">Quick Actions:</span>
-                <?php if (empty($record['datetime_received'])): ?>
-                    <button type="button" class="btn btn-sm btn-received" onclick="quickUpdate('datetime_received')">
-                        ✓ Mark as Received
-                    </button>
-                <?php endif; ?>
-                <?php if (empty($record['datetime_processed'])): ?>
-                    <button type="button" class="btn btn-sm btn-processing" onclick="quickUpdate('datetime_processed')">
-                        ⚙ Mark as Processed
-                    </button>
-                <?php endif; ?>
-                <?php if (empty($record['datetime_accomplished'])): ?>
-                    <button type="button" class="btn btn-sm btn-accomplished" onclick="quickUpdate('datetime_accomplished')">
-                        ★ Mark as Accomplished
-                    </button>
-                <?php endif; ?>
-            </div>
-            
             <form method="POST" action="">
                 <!-- Department -->
                 <div class="form-group">

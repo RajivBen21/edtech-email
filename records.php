@@ -536,7 +536,7 @@ $departments = $stmt->fetchAll();
             
             <!-- Delete Selected Bar (hidden by default, shown via JavaScript) -->
             <div id="deleteBar">
-                <span>🗑️ <span id="deleteCount">0</span> record(s) selected</span>
+                <span> <span id="deleteCount">0</span> record(s) selected</span>
                 <button type="button" class="btn btn-danger" onclick="confirmDeleteMultiple()">Delete Selected</button>
                 <button type="button" class="btn btn-secondary" onclick="clearSelection()">Cancel</button>
             </div>
@@ -694,7 +694,7 @@ $departments = $stmt->fetchAll();
     <div id="selectionPanel">
         <div class="selection-panel-header">
             <div class="panel-title">
-                📋 <span>Selected Records</span>
+                 <span>Selected Records</span>
                 <span class="panel-count" id="panelCount">0</span>
             </div>
             <button type="button" class="btn-icon" onclick="toggleSelectionPreview()" title="Toggle Preview">

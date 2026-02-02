@@ -39,7 +39,12 @@ body {
     font-size: 20px;
     font-weight: 600;
 }
-
+/* Header Logo */
+.header-logo {
+    height: 40px;
+    width: auto;
+    border-radius: 4px;
+}
 .header-subtitle {
     font-size: 12px;
     opacity: 0.9;

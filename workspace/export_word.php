@@ -7,6 +7,12 @@ require_once '../vendor/autoload.php';
 
 use PhpOffice\PhpWord\TemplateProcessor;
 
+// ===== HELPER FUNCTION (MUST BE DEFINED FIRST) =====
+function formatDateTimeForExport($datetime) {
+    if (empty($datetime)) return '_______________';
+    return date('M d, Y h:i A', strtotime($datetime));
+}
+
 // Set custom temp directory
 $tempDir = realpath(__DIR__ . '/../temp');
 if (!$tempDir) {
@@ -68,6 +74,9 @@ $dept_records = $grouped_records[$first_dept];
 $records_to_export = array_slice($dept_records, 0, 10);
 $record_count = count($records_to_export);
 
+// Get first record for shared fields (datetime tracking)
+$first_record = $records_to_export[0];
+
 try {
     // Load the template
     $templateProcessor = new TemplateProcessor($templatePath);
@@ -96,13 +105,12 @@ try {
     }
     
     // ===== DATE/TIME TRACKING FIELDS =====
-    // Set as underscores for manual entry (or leave blank)
-    $templateProcessor->setValue('datetime_received', '______________');
-    $templateProcessor->setValue('datetime_processed', '______________');
-    $templateProcessor->setValue('datetime_accomplished', '______________');
-    
+    $templateProcessor->setValue('datetime_received', formatDateTimeForExport($first_record['datetime_received'] ?? null));
+    $templateProcessor->setValue('datetime_processed', formatDateTimeForExport($first_record['datetime_processed'] ?? null));
+    $templateProcessor->setValue('datetime_accomplished', formatDateTimeForExport($first_record['datetime_accomplished'] ?? null));
+
     // ===== REMARKS FIELD =====
-    $templateProcessor->setValue('remarks', '');
+    $templateProcessor->setValue('remarks', $first_record['remarks'] ?? '');
     
     // Generate filename
     $safeDept = preg_replace('/[^a-zA-Z0-9]/', '_', $first_dept);

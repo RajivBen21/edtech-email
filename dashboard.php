@@ -61,7 +61,7 @@ $recent_records = $stmt->fetchAll();
     <div class="container">
         <!-- Welcome Message -->
         <div class="card">
-            <h2>Welcome, <?php echo htmlspecialchars($_SESSION['full_name']); ?>!</h2>
+            <h2>Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?>!</h2>
             <p>Role: <?php echo $_SESSION['role']; ?></p>
         </div>
 

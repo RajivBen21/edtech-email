@@ -171,8 +171,8 @@ $current_status = getRequestStatus($record);
     <div class="header">
         <div class="header-left">
             <div>
-                <h1>LDCU EdTech Email System</h1>
-                <div class="header-subtitle">Educational Technology Center</div>
+                <h1>Educational Technology Center</h1>
+                <div class="header-subtitle">Liceo de Cagayan University</div>
             </div>
         </div>
         <nav class="nav-menu">
@@ -311,7 +311,7 @@ $current_status = getRequestStatus($record);
                 
                 <!-- Date/Time Tracking Section -->
                 <div class="card-header" style="margin-top: 20px; margin-bottom: 15px;">
-                    <h3 class="card-title">📅 Request Status Tracking</h3>
+                    <h3 class="card-title"> Request Status Tracking</h3>
                 </div>
                 
                 <!-- Status Timeline -->

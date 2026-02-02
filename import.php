@@ -100,8 +100,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['csv_file'])) {
     <div class="header">
         <div class="header-left">
             <div>
-                <h1>LDCU EdTech Email System</h1>
-                <div class="header-subtitle">Educational Technology Center</div>
+                <h1>Educational Technology Center</h1>
+                <div class="header-subtitle">Liceo de Cagayan University</div>
             </div>
         </div>
         <nav class="nav-menu">

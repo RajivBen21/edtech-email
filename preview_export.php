@@ -146,8 +146,8 @@ function formatDateTime($datetime) {
     <div class="header">
         <div class="header-left">
             <div>
-                <h1>LDCU EdTech Email System</h1>
-                <div class="header-subtitle">Educational Technology Center</div>
+                <h1>Educational Technology Center</h1>
+                <div class="header-subtitle">Liceo de Cagayan University</div>
             </div>
         </div>
         <nav class="nav-menu">
@@ -192,7 +192,7 @@ function formatDateTime($datetime) {
                 
                 <!-- Table 1: Names and Departments -->
                 <div class="preview-section">
-                    <h4>📋 Table 1: Request Form (Names & Departments) <?php if ($total_pages > 1): ?>- Page <?php echo $page + 1; ?><?php endif; ?></h4>
+                    <h4> Table 1: Request Form (Names & Departments) <?php if ($total_pages > 1): ?>- Page <?php echo $page + 1; ?><?php endif; ?></h4>
                     <table class="preview-table">
                         <thead>
                             <tr>
@@ -219,7 +219,7 @@ function formatDateTime($datetime) {
                 
                 <!-- Table 2: Emails, Passwords, and Timestamps -->
                 <div class="preview-section">
-                    <h4>📧 Table 2: Monitoring Form (Emails, Passwords & Status) <?php if ($total_pages > 1): ?>- Page <?php echo $page + 1; ?><?php endif; ?></h4>
+                    <h4> Table 2: Monitoring Form (Emails, Passwords & Status) <?php if ($total_pages > 1): ?>- Page <?php echo $page + 1; ?><?php endif; ?></h4>
                     <table class="preview-table">
                         <thead>
                             <tr>
@@ -255,7 +255,7 @@ function formatDateTime($datetime) {
                 <input type="hidden" name="request_type" value="<?php echo htmlspecialchars($request_type); ?>">
                 
                 <div class="button-group">
-                    <button type="submit" class="btn btn-primary">📥 Download Word Document</button>
+                    <button type="submit" class="btn btn-primary"> Download Word Document</button>
                     <a href="records.php" class="btn btn-secondary">← Back to Records</a>
                 </div>
             </form>

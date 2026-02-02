@@ -439,8 +439,8 @@ $departments = $stmt->fetchAll();
     <div class="header">
         <div class="header-left">
             <div>
-                <h1>LDCU EdTech Email System</h1>
-                <div class="header-subtitle">Educational Technology Center</div>
+                <h1>Educational Technology Center</h1>
+                <div class="header-subtitle">Liceo de Cagayan University</div>
             </div>
         </div>
         <nav class="nav-menu">
@@ -516,7 +516,7 @@ $departments = $stmt->fetchAll();
                         <option value="New">New Email</option>
                         <option value="Activate">Activate</option>
                     </select>
-                    <button type="submit" class="btn btn-success">📄 Export to Word</button>
+                    <button type="submit" class="btn btn-success"> Export to Word</button>
                     <span class="select-count"><span id="selectedCount">0</span> selected</span>
                 </div>
             
@@ -658,7 +658,7 @@ $departments = $stmt->fetchAll();
     <!-- Delete Confirmation Modal -->
     <div class="modal-overlay" id="deleteModal">
         <div class="modal">
-            <h3>⚠️ Confirm Delete</h3>
+            <h3>Confirm Delete</h3>
             <p id="deleteMessage">Are you sure you want to delete this record?</p>
             <div class="modal-buttons">
                 <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>

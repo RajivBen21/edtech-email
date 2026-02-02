@@ -62,16 +62,16 @@ if ($current_module == 'email') {
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <style>
-        /* Module Tabs */
+        /* Module Tabs - Stretched to full width */
         .module-tabs {
             display: flex;
             gap: 15px;
             margin-bottom: 25px;
-            flex-wrap: wrap;
         }
         
         .module-tab {
-            padding: 20px 25px;
+            flex: 1;
+            padding: 20px 15px;
             background: white;
             border: 2px solid #e2e8f0;
             border-radius: 12px;
@@ -84,7 +84,6 @@ if ($current_module == 'email') {
             flex-direction: column;
             align-items: center;
             gap: 8px;
-            min-width: 160px;
             text-align: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
@@ -127,22 +126,14 @@ if ($current_module == 'email') {
             margin-top: 5px;
         }
 
-        .welcome-card {
-            background: linear-gradient(135deg, #1a365d, #2b6cb0);
-            color: white;
-            border-radius: 12px;
-            padding: 25px 30px;
-            margin-bottom: 25px;
-        }
-        
-        .welcome-card h2 {
-            margin-bottom: 5px;
-            font-size: 24px;
-        }
-        
-        .welcome-card p {
-            opacity: 0.9;
-            margin: 0;
+        @media (max-width: 768px) {
+            .module-tabs {
+                flex-wrap: wrap;
+            }
+            .module-tab {
+                flex: 1 1 calc(50% - 10px);
+                min-width: 140px;
+            }
         }
     </style>
 </head>
@@ -164,13 +155,13 @@ if ($current_module == 'email') {
 
     <!-- Main Content -->
     <div class="container">
-        <!-- Welcome Message -->
-        <div class="welcome-card">
+        <!-- Welcome Message (Original white card style) -->
+        <div class="card" style="margin-bottom: 25px;">
             <h2>Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?>!</h2>
             <p>Role: <?php echo $_SESSION['role'] ?? 'Staff'; ?></p>
         </div>
 
-        <!-- Module Tabs -->
+        <!-- Module Tabs (Stretched to full width) -->
         <div class="module-tabs">
             <a href="?module=email" class="module-tab <?php echo $current_module == 'email' ? 'active' : ''; ?>">
                 <span class="tab-icon"></span>
@@ -182,18 +173,15 @@ if ($current_module == 'email') {
             </a>
             <div class="module-tab coming-soon">
                 <span class="tab-icon"></span>
-                <span class="tab-label">Module 3</span>
-                <span class="coming-soon-badge">Coming Soon</span>
+                <span class="tab-label">3</span>
             </div>
             <div class="module-tab coming-soon">
                 <span class="tab-icon"></span>
-                <span class="tab-label">Module 4</span>
-                <span class="coming-soon-badge">Coming Soon</span>
+                <span class="tab-label">4</span>
             </div>
             <div class="module-tab coming-soon">
                 <span class="tab-icon"></span>
-                <span class="tab-label">Module 5</span>
-                <span class="coming-soon-badge">Coming Soon</span>
+                <span class="tab-label">5</span>
             </div>
         </div>
 

@@ -7,12 +7,6 @@ require_once '../vendor/autoload.php';
 
 use PhpOffice\PhpWord\TemplateProcessor;
 
-// ===== HELPER FUNCTION (MUST BE DEFINED FIRST) =====
-function formatDateTimeForExport($datetime) {
-    if (empty($datetime)) return '_______________';
-    return date('M d, Y h:i A', strtotime($datetime));
-}
-
 // Set custom temp directory
 $tempDir = realpath(__DIR__ . '/../temp');
 if (!$tempDir) {
@@ -74,8 +68,16 @@ $dept_records = $grouped_records[$first_dept];
 $records_to_export = array_slice($dept_records, 0, 10);
 $record_count = count($records_to_export);
 
-// Get first record for shared fields (datetime tracking)
+// Get the record date from the first record (or use current date as fallback)
 $first_record = $records_to_export[0];
+$record_date = $first_record['record_date'] ?? null;
+
+// Format the date - use record_date if available, otherwise use current date
+if (!empty($record_date)) {
+    $formatted_date = date('F d, Y', strtotime($record_date));
+} else {
+    $formatted_date = date('F d, Y');
+}
 
 try {
     // Load the template
@@ -83,7 +85,7 @@ try {
     
     // ===== HEADER FIELDS =====
     $templateProcessor->setValue('college_department', $first_dept);
-    $templateProcessor->setValue('date', date('F d, Y'));
+    $templateProcessor->setValue('date', $formatted_date);
     
     // ===== CLONE TABLE ROWS =====
     $templateProcessor->cloneRow('last_name', $record_count);
@@ -105,12 +107,12 @@ try {
     }
     
     // ===== DATE/TIME TRACKING FIELDS =====
-    $templateProcessor->setValue('datetime_received', formatDateTimeForExport($first_record['datetime_received'] ?? null));
-    $templateProcessor->setValue('datetime_processed', formatDateTimeForExport($first_record['datetime_processed'] ?? null));
-    $templateProcessor->setValue('datetime_accomplished', formatDateTimeForExport($first_record['datetime_accomplished'] ?? null));
-
+    $templateProcessor->setValue('datetime_received', '______________');
+    $templateProcessor->setValue('datetime_processed', '______________');
+    $templateProcessor->setValue('datetime_accomplished', '______________');
+    
     // ===== REMARKS FIELD =====
-    $templateProcessor->setValue('remarks', $first_record['remarks'] ?? '');
+    $templateProcessor->setValue('remarks', '');
     
     // Generate filename
     $safeDept = preg_replace('/[^a-zA-Z0-9]/', '_', $first_dept);

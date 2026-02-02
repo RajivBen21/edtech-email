@@ -15,7 +15,7 @@ $stmt = $pdo->query("SELECT COUNT(*) as count FROM email_records");
 $stats['total'] = $stmt->fetch()['count'];
 
 // Activate accounts
-$stmt = $pdo->query("SELECT COUNT(*) as count FROM email_records WHERE account_status = 'Activate'");
+$stmt = $pdo->query("SELECT COUNT(*) as count FROM email_records WHERE account_status = 'Active'");
 $stats['activate'] = $stmt->fetch()['count'];
 
 // Deactivated accounts

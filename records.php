@@ -282,101 +282,159 @@ $departments = $stmt->fetchAll();
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <style>
-        /* Delete button styles */
-        .action-btn.delete {
-            background: #e53e3e;
-            color: white;
-        }
-        .action-btn.delete:hover {
-            background: #c53030;
-        }
+        /* Page-specific styles to ensure proper display */
         
-        /* Undo toast notification */
-        .undo-toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #1a365d;
-            color: white;
-            padding: 15px 25px;
+        /* Delete bar - hidden by default, shown via JS */
+        #deleteBar {
+            display: none;
+            background: #fed7d7;
+            padding: 10px 20px;
             border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            display: flex;
+            margin-bottom: 15px;
             align-items: center;
             gap: 15px;
-            z-index: 1000;
-            animation: slideUp 0.3s ease;
+            border: 1px solid #feb2b2;
         }
-        
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateX(-50%) translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(-50%) translateY(0);
-            }
+        #deleteBar.show {
+            display: flex;
         }
-        
-        .undo-toast .undo-message {
-            font-size: 14px;
-        }
-        
-        .undo-toast .undo-btn {
-            background: #4299e1;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-family: 'Montserrat', sans-serif;
+        #deleteBar span {
+            color: #c53030;
             font-weight: 600;
-            transition: background 0.3s;
         }
         
-        .undo-toast .undo-btn:hover {
-            background: #3182ce;
+        /* Selection panel - fixed position */
+        #selectionPanel {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            min-width: 320px;
+            max-width: 400px;
+            z-index: 9999;
+            border: 2px solid #2b6cb0;
+            font-family: 'Montserrat', sans-serif;
+        }
+        #selectionPanel.show {
+            display: block;
         }
         
-        .undo-toast .undo-timer {
-            font-size: 12px;
-            opacity: 0.8;
-        }
-        
-        .undo-toast .close-toast {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 18px;
-            cursor: pointer;
-            opacity: 0.7;
-            padding: 0 5px;
-        }
-        
-        .undo-toast .close-toast:hover {
-            opacity: 1;
-        }
-        
-        /* Delete confirmation modal */
-        .modal-overlay {
+        /* Modal overlay - covers entire screen */
+        #deleteModal {
+            display: none;
             position: fixed;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
+            width: 100%;
+            height: 100%;
             background: rgba(0,0,0,0.5);
-            display: none;
+            z-index: 10000;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
         }
-        
-        .modal-overlay.active {
+        #deleteModal.active {
             display: flex;
         }
         
+        .selection-panel-header {
+            background: linear-gradient(135deg, #2b6cb0, #1a365d);
+            color: white;
+            padding: 12px 15px;
+            border-radius: 10px 10px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .selection-panel-header .panel-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .selection-panel-header .panel-count {
+            background: rgba(255,255,255,0.2);
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .selection-panel-body {
+            max-height: 350px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .selection-list {
+            max-height: 280px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        .selection-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            background: #f7fafc;
+            margin-bottom: 6px;
+            border-radius: 8px;
+            font-size: 13px;
+            border-left: 3px solid #2b6cb0;
+        }
+        .selection-item:hover {
+            background: #edf2f7;
+        }
+        .selection-item .item-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .selection-item .item-name {
+            font-weight: 600;
+            color: #2d3748;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .selection-item .item-email {
+            color: #718096;
+            font-size: 11px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .selection-item .remove-btn {
+            background: none;
+            border: none;
+            color: #e53e3e;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0 5px;
+            margin-left: 10px;
+        }
+        .selection-actions {
+            padding: 12px;
+            border-top: 1px solid #e2e8f0;
+            background: #f7fafc;
+            border-radius: 0 0 10px 10px;
+        }
+        .btn-icon {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        .empty-selection {
+            text-align: center;
+            padding: 20px;
+            color: #718096;
+            font-size: 13px;
+        }
+        
+        /* Modal styles */
         .modal {
             background: white;
             padding: 30px;
@@ -386,51 +444,26 @@ $departments = $stmt->fetchAll();
             text-align: center;
             box-shadow: 0 10px 40px rgba(0,0,0,0.3);
         }
-        
         .modal h3 {
             color: #1a365d;
             margin-bottom: 15px;
         }
-        
         .modal p {
             color: #666;
             margin-bottom: 25px;
         }
-        
         .modal-buttons {
             display: flex;
             gap: 15px;
             justify-content: center;
         }
         
-        .btn-danger {
-            background: #e53e3e;
-            color: white;
+        /* Selected row highlight */
+        tr.selected-row {
+            background-color: #ebf8ff !important;
         }
-        
-        .btn-danger:hover {
-            background: #c53030;
-        }
-        
-        /* Delete selected bar */
-        .delete-bar {
-            background: #fed7d7;
-            padding: 10px 20px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            display: none;
-            align-items: center;
-            gap: 15px;
-            border: 1px solid #feb2b2;
-        }
-        
-        .delete-bar.show {
-            display: flex;
-        }
-        
-        .delete-bar span {
-            color: #c53030;
-            font-weight: 600;
+        tr.selected-row:hover {
+            background-color: #bee3f8 !important;
         }
     </style>
 </head>
@@ -501,8 +534,8 @@ $departments = $stmt->fetchAll();
             
             <?php if (count($records) > 0): ?>
             
-            <!-- Delete Selected Bar -->
-            <div class="delete-bar" id="deleteBar">
+            <!-- Delete Selected Bar (hidden by default, shown via JavaScript) -->
+            <div id="deleteBar">
                 <span>🗑️ <span id="deleteCount">0</span> record(s) selected</span>
                 <button type="button" class="btn btn-danger" onclick="confirmDeleteMultiple()">Delete Selected</button>
                 <button type="button" class="btn btn-secondary" onclick="clearSelection()">Cancel</button>
@@ -516,7 +549,7 @@ $departments = $stmt->fetchAll();
                         <option value="New">New Email</option>
                         <option value="Activate">Activate</option>
                     </select>
-                    <button type="submit" class="btn btn-success"> Export to Word</button>
+                    <button type="submit" class="btn btn-success">Export to Word</button>
                     <span class="select-count"><span id="selectedCount">0</span> selected</span>
                 </div>
             
@@ -526,7 +559,7 @@ $departments = $stmt->fetchAll();
                         <thead>
                             <tr>
                                 <th class="checkbox-cell">
-                                    <input type="checkbox" id="selectAll" title="Select All">
+                                    <input type="checkbox" id="selectAll" title="Select All on This Page">
                                 </th>
                                 <th>#</th>
                                 <th>Name</th>
@@ -546,11 +579,13 @@ $departments = $stmt->fetchAll();
                                 $dept_full = isset($department_mapping[$dept_display]) ? $department_mapping[$dept_display] : '';
                                 $request_status = getRequestStatus($record);
                             ?>
-                            <tr>
+                            <tr data-record-id="<?php echo $record['record_id']; ?>">
                                 <td class="checkbox-cell">
                                     <input type="checkbox" name="selected_records[]" 
                                            value="<?php echo $record['record_id']; ?>" 
-                                           class="record-checkbox">
+                                           class="record-checkbox"
+                                           data-name="<?php echo htmlspecialchars($record['last_name'] . ', ' . $record['first_name'] . ' ' . $record['middle_name']); ?>"
+                                           data-email="<?php echo htmlspecialchars($record['email']); ?>">
                                 </td>
                                 <td><?php echo $count++; ?></td>
                                 <td>
@@ -580,7 +615,7 @@ $departments = $stmt->fetchAll();
                                         <a href="edit_record.php?id=<?php echo $record['record_id']; ?>" 
                                            class="action-btn edit">Edit</a>
                                         <button type="button" class="action-btn delete" 
-                                                onclick="confirmDeleteSingle(<?php echo $record['record_id']; ?>, '<?php echo htmlspecialchars($record['last_name'] . ', ' . $record['first_name']); ?>')">
+                                                onclick="confirmDeleteSingle(<?php echo $record['record_id']; ?>, '<?php echo htmlspecialchars(addslashes($record['last_name'] . ', ' . $record['first_name'])); ?>')">
                                             Delete
                                         </button>
                                     </div>
@@ -655,8 +690,29 @@ $departments = $stmt->fetchAll();
         </div>
     </div>
 
+    <!-- Floating Selection Preview Panel (positioned fixed via CSS) -->
+    <div id="selectionPanel">
+        <div class="selection-panel-header">
+            <div class="panel-title">
+                📋 <span>Selected Records</span>
+                <span class="panel-count" id="panelCount">0</span>
+            </div>
+            <button type="button" class="btn-icon" onclick="toggleSelectionPreview()" title="Toggle Preview">
+                <span id="toggleIcon">▼</span>
+            </button>
+        </div>
+        <div class="selection-panel-body" id="selectionPanelBody">
+            <div class="selection-list" id="selectionList">
+                <div class="empty-selection">No records selected</div>
+            </div>
+            <div class="selection-actions">
+                <button type="button" class="btn btn-secondary" onclick="clearSelection()">Clear All</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Delete Confirmation Modal -->
-    <div class="modal-overlay" id="deleteModal">
+    <div id="deleteModal">
         <div class="modal">
             <h3>Confirm Delete</h3>
             <p id="deleteMessage">Are you sure you want to delete this record?</p>
@@ -708,53 +764,272 @@ $departments = $stmt->fetchAll();
     <?php endif; ?>
 
     <script>
-        // Select all functionality
+        // ===== PERSISTENT SELECTION MANAGER =====
+        const SelectionManager = {
+            storageKey: 'selectedRecords',
+            detailsKey: 'selectedRecordDetails',
+            
+            getSelectedIds() {
+                const data = sessionStorage.getItem(this.storageKey);
+                return data ? JSON.parse(data) : [];
+            },
+            
+            getSelectedDetails() {
+                const data = sessionStorage.getItem(this.detailsKey);
+                return data ? JSON.parse(data) : {};
+            },
+            
+            saveSelectedIds(ids) {
+                sessionStorage.setItem(this.storageKey, JSON.stringify(ids));
+            },
+            
+            saveSelectedDetails(details) {
+                sessionStorage.setItem(this.detailsKey, JSON.stringify(details));
+            },
+            
+            add(id, name, email) {
+                const ids = this.getSelectedIds();
+                const details = this.getSelectedDetails();
+                
+                if (!ids.includes(id)) {
+                    ids.push(id);
+                    this.saveSelectedIds(ids);
+                }
+                
+                details[id] = { name: name, email: email };
+                this.saveSelectedDetails(details);
+            },
+            
+            remove(id) {
+                let ids = this.getSelectedIds();
+                let details = this.getSelectedDetails();
+                
+                ids = ids.filter(item => item !== id);
+                delete details[id];
+                
+                this.saveSelectedIds(ids);
+                this.saveSelectedDetails(details);
+            },
+            
+            clear() {
+                sessionStorage.removeItem(this.storageKey);
+                sessionStorage.removeItem(this.detailsKey);
+            },
+            
+            isSelected(id) {
+                return this.getSelectedIds().includes(id);
+            },
+            
+            count() {
+                return this.getSelectedIds().length;
+            }
+        };
+
+        // ===== INITIALIZATION ON PAGE LOAD =====
+        document.addEventListener('DOMContentLoaded', function() {
+            // Restore checkbox states from storage
+            document.querySelectorAll('.record-checkbox').forEach(checkbox => {
+                if (SelectionManager.isSelected(checkbox.value)) {
+                    checkbox.checked = true;
+                    const row = checkbox.closest('tr');
+                    if (row) row.classList.add('selected-row');
+                }
+            });
+            
+            updateSelectionUI();
+            updateSelectionPreview();
+            updateSelectAllCheckbox();
+        });
+
+        // ===== SELECT ALL FUNCTIONALITY =====
         document.getElementById('selectAll').addEventListener('change', function() {
             const checkboxes = document.querySelectorAll('.record-checkbox');
             checkboxes.forEach(checkbox => {
                 checkbox.checked = this.checked;
+                const name = checkbox.getAttribute('data-name');
+                const email = checkbox.getAttribute('data-email');
+                const row = checkbox.closest('tr');
+                
+                if (this.checked) {
+                    SelectionManager.add(checkbox.value, name, email);
+                    if (row) row.classList.add('selected-row');
+                } else {
+                    SelectionManager.remove(checkbox.value);
+                    if (row) row.classList.remove('selected-row');
+                }
             });
-            updateCount();
+            updateSelectionUI();
+            updateSelectionPreview();
         });
 
-        // Individual checkbox change
+        // ===== INDIVIDUAL CHECKBOX CHANGE =====
         document.querySelectorAll('.record-checkbox').forEach(checkbox => {
             checkbox.addEventListener('change', function() {
-                updateCount();
+                const name = this.getAttribute('data-name');
+                const email = this.getAttribute('data-email');
+                const row = this.closest('tr');
+                
+                if (this.checked) {
+                    SelectionManager.add(this.value, name, email);
+                    if (row) row.classList.add('selected-row');
+                } else {
+                    SelectionManager.remove(this.value);
+                    if (row) row.classList.remove('selected-row');
+                }
+                
+                updateSelectionUI();
+                updateSelectionPreview();
+                updateSelectAllCheckbox();
             });
         });
 
-        // Update selected count and show/hide delete bar
-        function updateCount() {
-            const checked = document.querySelectorAll('.record-checkbox:checked');
-            const count = checked.length;
+        // ===== UPDATE UI FUNCTIONS =====
+        function updateSelectionUI() {
+            const totalSelected = SelectionManager.count();
             
-            document.getElementById('selectedCount').textContent = count;
-            document.getElementById('deleteCount').textContent = count;
+            document.getElementById('selectedCount').textContent = totalSelected;
+            document.getElementById('deleteCount').textContent = totalSelected;
+            document.getElementById('panelCount').textContent = totalSelected;
             
+            // Show/hide delete bar
             const deleteBar = document.getElementById('deleteBar');
-            if (count > 0) {
+            if (totalSelected > 0) {
                 deleteBar.classList.add('show');
             } else {
                 deleteBar.classList.remove('show');
             }
+            
+            // Show/hide selection panel
+            const panel = document.getElementById('selectionPanel');
+            if (totalSelected > 0) {
+                panel.classList.add('show');
+            } else {
+                panel.classList.remove('show');
+            }
         }
 
-        // Clear selection
+        function updateSelectAllCheckbox() {
+            const allCheckboxes = document.querySelectorAll('.record-checkbox');
+            const checkedCheckboxes = document.querySelectorAll('.record-checkbox:checked');
+            const selectAll = document.getElementById('selectAll');
+            
+            if (allCheckboxes.length > 0 && checkedCheckboxes.length === allCheckboxes.length) {
+                selectAll.checked = true;
+                selectAll.indeterminate = false;
+            } else if (checkedCheckboxes.length > 0) {
+                selectAll.checked = false;
+                selectAll.indeterminate = true;
+            } else {
+                selectAll.checked = false;
+                selectAll.indeterminate = false;
+            }
+        }
+
+        function updateSelectionPreview() {
+            const details = SelectionManager.getSelectedDetails();
+            const list = document.getElementById('selectionList');
+            const count = SelectionManager.count();
+            
+            if (count === 0) {
+                list.innerHTML = '<div class="empty-selection">No records selected</div>';
+                return;
+            }
+            
+            let html = '';
+            for (const [id, record] of Object.entries(details)) {
+                html += `
+                    <div class="selection-item" data-id="${id}">
+                        <div class="item-info">
+                            <div class="item-name">${escapeHtml(record.name)}</div>
+                            <div class="item-email">${escapeHtml(record.email)}</div>
+                        </div>
+                        <button type="button" class="remove-btn" onclick="removeFromSelection('${id}')" title="Remove">×</button>
+                    </div>
+                `;
+            }
+            list.innerHTML = html;
+        }
+
+        // ===== HELPER FUNCTIONS =====
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function toggleSelectionPreview() {
+            const body = document.getElementById('selectionPanelBody');
+            const icon = document.getElementById('toggleIcon');
+            
+            if (body.style.display === 'none') {
+                body.style.display = 'flex';
+                icon.textContent = '▼';
+            } else {
+                body.style.display = 'none';
+                icon.textContent = '▲';
+            }
+        }
+
+        function removeFromSelection(id) {
+            SelectionManager.remove(id);
+            
+            const checkbox = document.querySelector(`.record-checkbox[value="${id}"]`);
+            if (checkbox) {
+                checkbox.checked = false;
+                const row = checkbox.closest('tr');
+                if (row) row.classList.remove('selected-row');
+            }
+            
+            updateSelectionUI();
+            updateSelectionPreview();
+            updateSelectAllCheckbox();
+        }
+
+        // ===== CLEAR SELECTION =====
         function clearSelection() {
+            SelectionManager.clear();
+            
             document.querySelectorAll('.record-checkbox').forEach(checkbox => {
                 checkbox.checked = false;
+                const row = checkbox.closest('tr');
+                if (row) row.classList.remove('selected-row');
             });
             document.getElementById('selectAll').checked = false;
-            updateCount();
+            document.getElementById('selectAll').indeterminate = false;
+            
+            updateSelectionUI();
+            updateSelectionPreview();
         }
 
-        // Confirm delete single record
+        // ===== EXPORT FORM SUBMISSION =====
+        document.getElementById('exportForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const selectedIds = SelectionManager.getSelectedIds();
+            
+            if (selectedIds.length === 0) {
+                alert('Please select at least one record to export.');
+                return;
+            }
+            
+            const existingInputs = this.querySelectorAll('input[name="selected_records[]"]');
+            existingInputs.forEach(input => input.remove());
+            
+            selectedIds.forEach(id => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'selected_records[]';
+                input.value = id;
+                this.appendChild(input);
+            });
+            
+            this.submit();
+        });
+
+        // ===== DELETE FUNCTIONS =====
         function confirmDeleteSingle(recordId, recordName) {
             document.getElementById('deleteMessage').textContent = 
                 'Are you sure you want to delete "' + recordName + '"?';
-            document.getElementById('deleteAction').value = 'delete_single';
-            document.getElementById('deleteRecordId').value = recordId;
             document.getElementById('deleteForm').innerHTML = 
                 '<input type="hidden" name="action" value="delete_single">' +
                 '<input type="hidden" name="record_id" value="' + recordId + '">' +
@@ -762,10 +1037,9 @@ $departments = $stmt->fetchAll();
             document.getElementById('deleteModal').classList.add('active');
         }
 
-        // Confirm delete multiple records
         function confirmDeleteMultiple() {
-            const checked = document.querySelectorAll('.record-checkbox:checked');
-            const count = checked.length;
+            const selectedIds = SelectionManager.getSelectedIds();
+            const count = selectedIds.length;
             
             if (count === 0) {
                 alert('Please select at least one record to delete.');
@@ -775,10 +1049,9 @@ $departments = $stmt->fetchAll();
             document.getElementById('deleteMessage').textContent = 
                 'Are you sure you want to delete ' + count + ' selected record(s)?';
             
-            // Build form with selected IDs
             let formHtml = '<input type="hidden" name="action" value="delete_multiple">';
-            checked.forEach(checkbox => {
-                formHtml += '<input type="hidden" name="selected_records[]" value="' + checkbox.value + '">';
+            selectedIds.forEach(id => {
+                formHtml += '<input type="hidden" name="selected_records[]" value="' + id + '">';
             });
             formHtml += '<button type="submit" class="btn btn-danger">Delete ' + count + ' Record(s)</button>';
             
@@ -786,7 +1059,6 @@ $departments = $stmt->fetchAll();
             document.getElementById('deleteModal').classList.add('active');
         }
 
-        // Close delete modal
         function closeDeleteModal() {
             document.getElementById('deleteModal').classList.remove('active');
         }
@@ -804,6 +1076,11 @@ $departments = $stmt->fetchAll();
                 closeDeleteModal();
             }
         });
+
+        // ===== CLEAR SELECTION AFTER DELETE =====
+        <?php if (isset($_GET['deleted']) || isset($_GET['restored'])): ?>
+        SelectionManager.clear();
+        <?php endif; ?>
     </script>
 </body>
 </html>

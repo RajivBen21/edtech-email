@@ -224,20 +224,6 @@ $total_departments = count($grouped_records);
             </div>
             <?php endforeach; ?>
             
-            <!-- Document Info -->
-            <div class="warning-box" style="background: #f0fdf4; border-color: #22c55e;">
-                <h4 style="color: #166534;">📄 Document Structure</h4>
-                <p style="color: #166534;">The exported Word document will include:</p>
-                <ul style="color: #166534; margin: 10px 0 0 20px;">
-                    <li>University header</li>
-                    <li>Department: <strong><?php echo htmlspecialchars(array_key_first($grouped_records)); ?></strong></li>
-                    <li>Table with <?php echo min(10, count($grouped_records[array_key_first($grouped_records)])); ?> record(s)</li>
-                    <li>Signature fields (Prepared by, Endorsed by, Received by, Recommended by, Approved by)</li>
-                    <li>Request monitoring section</li>
-                    <li>Remarks section</li>
-                </ul>
-            </div>
-            
             <!-- Export Form -->
             <form method="POST" action="export_word.php">
                 <?php foreach ($selected_ids as $id): ?>
@@ -246,7 +232,7 @@ $total_departments = count($grouped_records);
                 
                 <div class="button-group" style="display: flex; gap: 15px; justify-content: center; margin-top: 30px;">
                     <button type="submit" class="btn btn-primary" style="padding: 15px 30px; font-size: 16px;">
-                        📄 Download Word Document
+                        Download Word Document
                     </button>
                     <a href="records.php" class="btn btn-secondary" style="padding: 15px 30px; font-size: 16px;">
                         ← Back to Records

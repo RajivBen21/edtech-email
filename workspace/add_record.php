@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $first_name = trim($_POST['first_name']);
     $middle_name = trim($_POST['middle_name'] ?? '');
     $liceo_email = trim($_POST['liceo_email'] ?? '');
-    $employment_status = $_POST['employment_status'];
+    $employment_status = $_POST['employment_status'] ?? 'Full-time';
     $record_date = $_POST['record_date'] ?: date('Y-m-d');
     $remarks = trim($_POST['remarks'] ?? '');
     $recorded_by = $_SESSION['full_name'] ?? $_SESSION['username'];
@@ -83,8 +83,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             padding: 6px 12px;
             font-size: 12px;
         }
-        .btn-now { background: #48bb78; color: white; }
-        .btn-clear { background: #e2e8f0; color: #4a5568; }
+        .btn-now { background: #48bb78; color: white; border: none; cursor: pointer; border-radius: 4px; }
+        .btn-now:hover { background: #38a169; }
+        .btn-clear { background: #e2e8f0; color: #4a5568; border: none; cursor: pointer; border-radius: 4px; }
+        .btn-clear:hover { background: #cbd5e0; }
     </style>
 </head>
 <body>
@@ -162,10 +164,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                value="<?php echo htmlspecialchars($_POST['liceo_email'] ?? ''); ?>">
                     </div>
                     <div class="form-group">
-                        <label for="employment_status">Status (Full-time/Part-time) *</label>
+                        <label for="employment_status">Status *</label>
                         <select name="employment_status" id="employment_status" class="form-control" required>
-                            <option value="Full-time" <?php echo (isset($_POST['employment_status']) && $_POST['employment_status'] == 'Full-time') ? 'selected' : ''; ?>>Full-time</option>
+                            <option value="Full-time" <?php echo (!isset($_POST['employment_status']) || $_POST['employment_status'] == 'Full-time') ? 'selected' : ''; ?>>Full-time</option>
                             <option value="Part-time" <?php echo (isset($_POST['employment_status']) && $_POST['employment_status'] == 'Part-time') ? 'selected' : ''; ?>>Part-time</option>
+                            <option value="Probationary" <?php echo (isset($_POST['employment_status']) && $_POST['employment_status'] == 'Probationary') ? 'selected' : ''; ?>>Probationary</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -176,8 +179,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
                 
                 <!-- Date/Time Tracking Section -->
-                <div class="card-header" style="margin-top: 20px; margin-bottom: 15px;">
-                    <h3 class="card-title">Request Status Tracking</h3>
+                <div class="card-header" style="margin-top: 20px; margin-bottom: 15px; padding: 0;">
+                    <h3 class="card-title" style="font-size: 16px;">Request Status Tracking</h3>
                 </div>
                 
                 <div class="form-row">

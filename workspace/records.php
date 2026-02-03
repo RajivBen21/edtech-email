@@ -38,6 +38,7 @@ $department_mapping = [
     'LC' => 'La Castilla',
     'CMed' => 'College of Medicine',
     'LN' => 'Liceo Net',
+    'CIT' => 'College of Information Technology',
     'IA' => 'Internal Audit',
     'PP' => 'Physical Plant'
 ];
@@ -52,6 +53,20 @@ function getRequestStatus($record) {
         return ['status' => 'received', 'label' => 'Received', 'class' => 'badge-received'];
     }
     return ['status' => 'pending', 'label' => 'Pending', 'class' => 'badge-pending'];
+}
+
+// Helper function to get employment status badge class
+function getEmploymentStatusClass($status) {
+    switch ($status) {
+        case 'Full-time':
+            return 'badge-approved';
+        case 'Part-time':
+            return 'badge-processing';
+        case 'Probationary':
+            return 'badge-pending';
+        default:
+            return 'badge-approved';
+    }
 }
 
 // Handle delete action
@@ -467,6 +482,11 @@ $departments = $stmt->fetchAll();
             cursor: pointer;
             opacity: 0.7;
         }
+        
+        .badge-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
     </style>
 </head>
 <body>
@@ -515,9 +535,10 @@ $departments = $stmt->fetchAll();
                 </select>
                 
                 <select name="status" class="form-control" style="width: auto;">
-                    <option value="">All Employment Status</option>
+                    <option value="">All Status</option>
                     <option value="Full-time" <?php echo $filter_status == 'Full-time' ? 'selected' : ''; ?>>Full-time</option>
                     <option value="Part-time" <?php echo $filter_status == 'Part-time' ? 'selected' : ''; ?>>Part-time</option>
+                    <option value="Probationary" <?php echo $filter_status == 'Probationary' ? 'selected' : ''; ?>>Probationary</option>
                 </select>
                 
                 <select name="request_status" class="form-control" style="width: auto;">
@@ -545,18 +566,12 @@ $departments = $stmt->fetchAll();
             </div>
             
             <!-- Export Form -->
-<form method="POST" action="preview_export.php" id="exportForm">
-    <div class="export-bar">
-        <label>Export Selected:</label>
-        <button type="submit" class="btn btn-success">Export to Word</button>
-        <span class="select-count"><span id="selectedCount">0</span> selected</span>
-    </div>
-
-    <!-- Records Table -->
-    <div class="table-responsive">
-        <!-- ... table content ... -->
-    </div>
-</form>
+            <form method="POST" action="preview_export.php" id="exportForm">
+                <div class="export-bar">
+                    <label>Export Selected:</label>
+                    <button type="submit" class="btn btn-success">Export to Word</button>
+                    <span class="select-count"><span id="selectedCount">0</span> selected</span>
+                </div>
             
                 <!-- Records Table -->
                 <div class="table-responsive">
@@ -580,6 +595,8 @@ $departments = $stmt->fetchAll();
                             $count = $start_number; 
                             foreach ($records as $record): 
                                 $request_status = getRequestStatus($record);
+                                $employment_status = $record['employment_status'] ?? 'Full-time';
+                                $status_class = getEmploymentStatusClass($employment_status);
                             ?>
                             <tr data-record-id="<?php echo $record['record_id']; ?>">
                                 <td class="checkbox-cell">
@@ -597,8 +614,8 @@ $departments = $stmt->fetchAll();
                                 </td>
                                 <td><?php echo htmlspecialchars($record['liceo_email']); ?></td>
                                 <td>
-                                    <span class="badge badge-<?php echo $record['employment_status'] == 'Full-time' ? 'approved' : 'processing'; ?>">
-                                        <?php echo $record['employment_status']; ?>
+                                    <span class="badge <?php echo $status_class; ?>">
+                                        <?php echo $employment_status; ?>
                                     </span>
                                 </td>
                                 <td>

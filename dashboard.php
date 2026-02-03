@@ -33,15 +33,9 @@ if ($current_module == 'email') {
     $recent_records = $stmt->fetchAll();
     
 } elseif ($current_module == 'workspace') {
-    // Google Workspace License stats
+    // Google Workspace License stats - Only Total and Today
     $stmt = $pdo->query("SELECT COUNT(*) as count FROM workspace_license_records");
     $stats['total'] = $stmt->fetch()['count'];
-
-    $stmt = $pdo->query("SELECT COUNT(*) as count FROM workspace_license_records WHERE employment_status = 'Full-time'");
-    $stats['fulltime'] = $stmt->fetch()['count'];
-
-    $stmt = $pdo->query("SELECT COUNT(*) as count FROM workspace_license_records WHERE employment_status = 'Part-time'");
-    $stats['parttime'] = $stmt->fetch()['count'];
 
     $stmt = $pdo->query("SELECT COUNT(*) as count FROM workspace_license_records WHERE DATE(created_at) = CURDATE()");
     $stats['today'] = $stmt->fetch()['count'];
@@ -173,15 +167,15 @@ if ($current_module == 'email') {
             </a>
             <div class="module-tab coming-soon">
                 <span class="tab-icon"></span>
-                <span class="tab-label">3</span>
+                <span class="tab-label">Module 3</span>
             </div>
             <div class="module-tab coming-soon">
                 <span class="tab-icon"></span>
-                <span class="tab-label">4</span>
+                <span class="tab-label">Module 4</span>
             </div>
             <div class="module-tab coming-soon">
                 <span class="tab-icon"></span>
-                <span class="tab-label">5</span>
+                <span class="tab-label">Module 5</span>
             </div>
         </div>
 
@@ -270,20 +264,13 @@ if ($current_module == 'email') {
         <?php elseif ($current_module == 'workspace'): ?>
         <!-- ===== GOOGLE WORKSPACE LICENSE MODULE ===== -->
         
-        <div class="stats-grid">
-            <div class="stat-card">
+        <!-- Only 2 stat cards: Total Records and Added Today -->
+        <div class="stats-grid" style="display: flex; gap: 20px;">
+            <div class="stat-card" style="flex: 1;">
                 <div class="stat-number"><?php echo $stats['total']; ?></div>
                 <div class="stat-label">Total Records</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-number"><?php echo $stats['fulltime']; ?></div>
-                <div class="stat-label">Full-time</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number"><?php echo $stats['parttime']; ?></div>
-                <div class="stat-label">Part-time</div>
-            </div>
-            <div class="stat-card">
+            <div class="stat-card" style="flex: 1;">
                 <div class="stat-number"><?php echo $stats['today']; ?></div>
                 <div class="stat-label">Added Today</div>
             </div>
@@ -327,7 +314,12 @@ if ($current_module == 'email') {
                             </td>
                             <td><?php echo htmlspecialchars($record['liceo_email']); ?></td>
                             <td>
-                                <span class="badge badge-<?php echo $record['employment_status'] == 'Full-time' ? 'approved' : 'processing'; ?>">
+                                <?php 
+                                $statusClass = 'approved';
+                                if ($record['employment_status'] == 'Part-time') $statusClass = 'processing';
+                                if ($record['employment_status'] == 'Probationary') $statusClass = 'pending';
+                                ?>
+                                <span class="badge badge-<?php echo $statusClass; ?>">
                                     <?php echo $record['employment_status']; ?>
                                 </span>
                             </td>

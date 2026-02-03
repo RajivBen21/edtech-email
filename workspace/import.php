@@ -46,7 +46,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['csv_file'])) {
                         continue;
                     }
                     
-                    if (!in_array($employment_status, ['Full-time', 'Part-time'])) {
+                    // Validate employment status - now includes Probationary
+                    if (!in_array($employment_status, ['Full-time', 'Part-time', 'Probationary'])) {
                         $employment_status = 'Full-time';
                     }
                     
@@ -96,6 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['csv_file'])) {
     <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
+    <!-- Header -->
     <div class="header">
         <div class="header-left">
             <img src="../images/tech-ed-logo.png" alt="EdTech Logo" class="header-logo">
@@ -128,30 +130,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['csv_file'])) {
             <div style="background: #f7fafc; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
                 <h4 style="margin-bottom: 10px; color: #1a365d;">📋 CSV File Format</h4>
                 <p style="margin-bottom: 10px;">Your CSV file should have columns in this order:</p>
-                <table class="data-table" style="margin-bottom: 15px;">
-                    <thead>
-                        <tr>
-                            <th>college_department</th>
-                            <th>last_name</th>
-                            <th>first_name</th>
-                            <th>middle_name</th>
-                            <th>liceo_email</th>
-                            <th>employment_status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>College of Nursing</td>
-                            <td>Dela Cruz</td>
-                            <td>Juan</td>
-                            <td>Santos</td>
-                            <td>jdelacruz@liceo.edu.ph</td>
-                            <td>Full-time</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="data-table" style="margin-bottom: 15px;">
+                        <thead>
+                            <tr>
+                                <th>college_department</th>
+                                <th>last_name</th>
+                                <th>first_name</th>
+                                <th>middle_name</th>
+                                <th>liceo_email</th>
+                                <th>employment_status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>College of Nursing</td>
+                                <td>Dela Cruz</td>
+                                <td>Juan</td>
+                                <td>Santos</td>
+                                <td>jdelacruz@liceo.edu.ph</td>
+                                <td>Full-time</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
                 <p style="font-size: 13px; color: #666;">
-                    <strong>Note:</strong> employment_status should be either "Full-time" or "Part-time"
+                    <strong>Note:</strong> employment_status should be one of: <strong>Full-time</strong>, <strong>Part-time</strong>, or <strong>Probationary</strong><br>
+                    If not specified or invalid, it will default to <strong>Full-time</strong>.
                 </p>
             </div>
             

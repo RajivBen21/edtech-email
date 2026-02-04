@@ -1,21 +1,17 @@
 <?php
 require_once 'includes/db_connect.php';
 
-// Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
     header('Location: index.php');
     exit;
 }
 
-// Get current module (default to 'email')
 $current_module = isset($_GET['module']) ? $_GET['module'] : 'email';
 
-// Get statistics based on module
 $stats = [];
 $recent_records = [];
 
 if ($current_module == 'email') {
-    // Email Activation stats
     $stmt = $pdo->query("SELECT COUNT(*) as count FROM email_records");
     $stats['total'] = $stmt->fetch()['count'];
 
@@ -28,21 +24,42 @@ if ($current_module == 'email') {
     $stmt = $pdo->query("SELECT COUNT(*) as count FROM email_records WHERE DATE(created_at) = CURDATE()");
     $stats['today'] = $stmt->fetch()['count'];
 
-    // Get recent records
     $stmt = $pdo->query("SELECT * FROM email_records ORDER BY created_at DESC LIMIT 10");
     $recent_records = $stmt->fetchAll();
     
 } elseif ($current_module == 'workspace') {
-    // Google Workspace License stats - Only Total and Today
     $stmt = $pdo->query("SELECT COUNT(*) as count FROM workspace_license_records");
     $stats['total'] = $stmt->fetch()['count'];
 
     $stmt = $pdo->query("SELECT COUNT(*) as count FROM workspace_license_records WHERE DATE(created_at) = CURDATE()");
     $stats['today'] = $stmt->fetch()['count'];
 
-    // Get recent records
     $stmt = $pdo->query("SELECT * FROM workspace_license_records ORDER BY created_at DESC LIMIT 10");
     $recent_records = $stmt->fetchAll();
+    
+} elseif ($current_module == 'retrieval') {
+    try {
+        $stmt = $pdo->query("SELECT COUNT(*) as count FROM retrieval_records");
+        $stats['total'] = $stmt->fetch()['count'];
+
+        $stmt = $pdo->query("SELECT COUNT(*) as count FROM retrieval_records WHERE request_type = 'Account'");
+        $stats['account'] = $stmt->fetch()['count'];
+
+        $stmt = $pdo->query("SELECT COUNT(*) as count FROM retrieval_records WHERE request_type = 'Password'");
+        $stats['password'] = $stmt->fetch()['count'];
+
+        $stmt = $pdo->query("SELECT COUNT(*) as count FROM retrieval_records WHERE DATE(created_at) = CURDATE()");
+        $stats['today'] = $stmt->fetch()['count'];
+
+        $stmt = $pdo->query("SELECT * FROM retrieval_records ORDER BY created_at DESC LIMIT 10");
+        $recent_records = $stmt->fetchAll();
+    } catch (Exception $e) {
+        $stats['total'] = 0;
+        $stats['account'] = 0;
+        $stats['password'] = 0;
+        $stats['today'] = 0;
+        $recent_records = [];
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -56,7 +73,6 @@ if ($current_module == 'email') {
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <style>
-        /* Module Tabs - Stretched to full width */
         .module-tabs {
             display: flex;
             gap: 15px;
@@ -96,10 +112,6 @@ if ($current_module == 'email') {
             box-shadow: 0 4px 12px rgba(43, 108, 176, 0.3);
         }
         
-        .module-tab .tab-icon {
-            font-size: 28px;
-        }
-        
         .module-tab .tab-label {
             font-size: 13px;
             line-height: 1.3;
@@ -132,7 +144,6 @@ if ($current_module == 'email') {
     </style>
 </head>
 <body>
-    <!-- Header -->
     <div class="header">
         <div class="header-left">
             <img src="images/tech-ed-logo.png" alt="EdTech Logo" class="header-logo">
@@ -147,40 +158,33 @@ if ($current_module == 'email') {
         </nav>
     </div>
 
-    <!-- Main Content -->
     <div class="container">
-        <!-- Welcome Message (Original white card style) -->
         <div class="card" style="margin-bottom: 25px;">
             <h2>Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?>!</h2>
             <p>Role: <?php echo $_SESSION['role'] ?? 'Staff'; ?></p>
         </div>
 
-        <!-- Module Tabs (Stretched to full width) -->
         <div class="module-tabs">
             <a href="?module=email" class="module-tab <?php echo $current_module == 'email' ? 'active' : ''; ?>">
-                <span class="tab-icon"></span>
                 <span class="tab-label">Email Account<br>Activation/Deactivation</span>
             </a>
             <a href="?module=workspace" class="module-tab <?php echo $current_module == 'workspace' ? 'active' : ''; ?>">
-                <span class="tab-icon"></span>
                 <span class="tab-label">Google Workspace<br>Account License</span>
             </a>
+            <a href="?module=retrieval" class="module-tab <?php echo $current_module == 'retrieval' ? 'active' : ''; ?>">
+                <span class="tab-label">Google Workspace<br>Account/Password Retrieval</span>
+            </a>
             <div class="module-tab coming-soon">
-                <span class="tab-icon"></span>
-                <span class="tab-label">Module 3</span>
-            </div>
-            <div class="module-tab coming-soon">
-                <span class="tab-icon"></span>
                 <span class="tab-label">Module 4</span>
+                <span class="coming-soon-badge">Coming Soon</span>
             </div>
             <div class="module-tab coming-soon">
-                <span class="tab-icon"></span>
                 <span class="tab-label">Module 5</span>
+                <span class="coming-soon-badge">Coming Soon</span>
             </div>
         </div>
 
         <?php if ($current_module == 'email'): ?>
-        <!-- ===== EMAIL ACTIVATION MODULE ===== -->
         
         <div class="stats-grid">
             <div class="stat-card">
@@ -252,7 +256,7 @@ if ($current_module == 'email') {
                 </table>
             </div>
             <p style="text-align: center; margin-top: 15px;">
-                <a href="records.php">View All Records →</a>
+                <a href="records.php">View All Records</a>
             </p>
             <?php else: ?>
                 <p style="text-align: center; color: #666; padding: 40px;">
@@ -262,9 +266,7 @@ if ($current_module == 'email') {
         </div>
         
         <?php elseif ($current_module == 'workspace'): ?>
-        <!-- ===== GOOGLE WORKSPACE LICENSE MODULE ===== -->
         
-        <!-- Only 2 stat cards: Total Records and Added Today -->
         <div class="stats-grid" style="display: flex; gap: 20px;">
             <div class="stat-card" style="flex: 1;">
                 <div class="stat-number"><?php echo $stats['total']; ?></div>
@@ -330,11 +332,90 @@ if ($current_module == 'email') {
                 </table>
             </div>
             <p style="text-align: center; margin-top: 15px;">
-                <a href="workspace/records.php">View All Records →</a>
+                <a href="workspace/records.php">View All Records</a>
             </p>
             <?php else: ?>
                 <p style="text-align: center; color: #666; padding: 40px;">
                     No records yet. <a href="workspace/add_record.php">Add your first record!</a>
+                </p>
+            <?php endif; ?>
+        </div>
+        
+        <?php elseif ($current_module == 'retrieval'): ?>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number"><?php echo $stats['total']; ?></div>
+                <div class="stat-label">Total Records</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number"><?php echo $stats['account']; ?></div>
+                <div class="stat-label">Account Retrieval</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number"><?php echo $stats['password']; ?></div>
+                <div class="stat-label">Password Retrieval</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number"><?php echo $stats['today']; ?></div>
+                <div class="stat-label">Added Today</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Quick Actions - Account/Password Retrieval</h3>
+            </div>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <a href="retrieval/add_record.php" class="btn btn-primary">+ Add New Record</a>
+                <a href="retrieval/records.php" class="btn btn-secondary">View All Records</a>
+                <a href="retrieval/import.php" class="btn btn-secondary">Import from CSV</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Recent Retrieval Records</h3>
+            </div>
+            
+            <?php if (count($recent_records) > 0): ?>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Student/Employee ID</th>
+                            <th>Request Type</th>
+                            <th>Date Added</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php $count = 1; foreach ($recent_records as $record): ?>
+                        <tr>
+                            <td><?php echo $count++; ?></td>
+                            <td>
+                                <strong><?php echo htmlspecialchars($record['last_name']); ?></strong>, 
+                                <?php echo htmlspecialchars($record['first_name']); ?>
+                            </td>
+                            <td><?php echo htmlspecialchars($record['student_employee_id']); ?></td>
+                            <td>
+                                <span class="badge badge-<?php echo $record['request_type'] == 'Account' ? 'approved' : 'processing'; ?>">
+                                    <?php echo $record['request_type']; ?>
+                                </span>
+                            </td>
+                            <td><?php echo date('M d, Y', strtotime($record['created_at'])); ?></td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+            <p style="text-align: center; margin-top: 15px;">
+                <a href="retrieval/records.php">View All Records</a>
+            </p>
+            <?php else: ?>
+                <p style="text-align: center; color: #666; padding: 40px;">
+                    No records yet. <a href="retrieval/add_record.php">Add your first record!</a>
                 </p>
             <?php endif; ?>
         </div>

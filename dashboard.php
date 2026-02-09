@@ -60,6 +60,22 @@ if ($current_module == 'email') {
         $stats['today'] = 0;
         $recent_records = [];
     }
+    
+} elseif ($current_module == 'training') {
+    try {
+        $stmt = $pdo->query("SELECT COUNT(*) as count FROM training_records");
+        $stats['total'] = $stmt->fetch()['count'];
+
+        $stmt = $pdo->query("SELECT COUNT(*) as count FROM training_records WHERE DATE(created_at) = CURDATE()");
+        $stats['today'] = $stmt->fetch()['count'];
+
+        $stmt = $pdo->query("SELECT * FROM training_records ORDER BY created_at DESC LIMIT 10");
+        $recent_records = $stmt->fetchAll();
+    } catch (Exception $e) {
+        $stats['total'] = 0;
+        $stats['today'] = 0;
+        $recent_records = [];
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -174,10 +190,9 @@ if ($current_module == 'email') {
             <a href="?module=retrieval" class="module-tab <?php echo $current_module == 'retrieval' ? 'active' : ''; ?>">
                 <span class="tab-label">Google Workspace<br>Account/Password Retrieval</span>
             </a>
-            <div class="module-tab coming-soon">
-                <span class="tab-label">Module 4</span>
-                <span class="coming-soon-badge">Coming Soon</span>
-            </div>
+            <a href="?module=training" class="module-tab <?php echo $current_module == 'training' ? 'active' : ''; ?>">
+                <span class="tab-label">Request for<br>Training/Seminar/Workshop</span>
+            </a>
             <div class="module-tab coming-soon">
                 <span class="tab-label">Module 5</span>
                 <span class="coming-soon-badge">Coming Soon</span>
@@ -320,6 +335,7 @@ if ($current_module == 'email') {
                                 $statusClass = 'approved';
                                 if ($record['employment_status'] == 'Part-time') $statusClass = 'processing';
                                 if ($record['employment_status'] == 'Probationary') $statusClass = 'pending';
+                                if ($record['employment_status'] == 'Full-time Probationary') $statusClass = 'pending';
                                 ?>
                                 <span class="badge badge-<?php echo $statusClass; ?>">
                                     <?php echo $record['employment_status']; ?>
@@ -343,20 +359,12 @@ if ($current_module == 'email') {
         
         <?php elseif ($current_module == 'retrieval'): ?>
         
-        <div class="stats-grid">
-            <div class="stat-card">
+        <div class="stats-grid" style="display: flex; gap: 20px;">
+            <div class="stat-card" style="flex: 1;">
                 <div class="stat-number"><?php echo $stats['total']; ?></div>
                 <div class="stat-label">Total Records</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-number"><?php echo $stats['account']; ?></div>
-                <div class="stat-label">Account Retrieval</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number"><?php echo $stats['password']; ?></div>
-                <div class="stat-label">Password Retrieval</div>
-            </div>
-            <div class="stat-card">
+            <div class="stat-card" style="flex: 1;">
                 <div class="stat-number"><?php echo $stats['today']; ?></div>
                 <div class="stat-label">Added Today</div>
             </div>
@@ -416,6 +424,78 @@ if ($current_module == 'email') {
             <?php else: ?>
                 <p style="text-align: center; color: #666; padding: 40px;">
                     No records yet. <a href="retrieval/add_record.php">Add your first record!</a>
+                </p>
+            <?php endif; ?>
+        </div>
+        
+        <?php elseif ($current_module == 'training'): ?>
+        
+        <div class="stats-grid" style="display: flex; gap: 20px;">
+            <div class="stat-card" style="flex: 1;">
+                <div class="stat-number"><?php echo $stats['total']; ?></div>
+                <div class="stat-label">Total Records</div>
+            </div>
+            <div class="stat-card" style="flex: 1;">
+                <div class="stat-number"><?php echo $stats['today']; ?></div>
+                <div class="stat-label">Added Today</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Quick Actions - Training/Seminar/Workshop</h3>
+            </div>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <a href="training/add_record.php" class="btn btn-primary">+ Add New Record</a>
+                <a href="training/records.php" class="btn btn-secondary">View All Records</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Recent Training/Seminar/Workshop Records</h3>
+            </div>
+            
+            <?php if (count($recent_records) > 0): ?>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Department</th>
+                            <th>Theme/Topic</th>
+                            <th>Activity Type</th>
+                            <th>Date Added</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php $count = 1; foreach ($recent_records as $record): ?>
+                        <tr>
+                            <td><?php echo $count++; ?></td>
+                            <td><?php echo htmlspecialchars($record['college_department']); ?></td>
+                            <td><?php echo htmlspecialchars(substr($record['theme_topic'], 0, 50)) . (strlen($record['theme_topic']) > 50 ? '...' : ''); ?></td>
+                            <td>
+                                <?php 
+                                $typeClass = 'approved';
+                                if ($record['activity_type'] == 'Seminar') $typeClass = 'processing';
+                                if ($record['activity_type'] == 'Workshop') $typeClass = 'pending';
+                                ?>
+                                <span class="badge badge-<?php echo $typeClass; ?>">
+                                    <?php echo $record['activity_type']; ?>
+                                </span>
+                            </td>
+                            <td><?php echo date('M d, Y', strtotime($record['created_at'])); ?></td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+            <p style="text-align: center; margin-top: 15px;">
+                <a href="training/records.php">View All Records</a>
+            </p>
+            <?php else: ?>
+                <p style="text-align: center; color: #666; padding: 40px;">
+                    No records yet. <a href="training/add_record.php">Add your first record!</a>
                 </p>
             <?php endif; ?>
         </div>

@@ -6,25 +6,31 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-$current_module = isset($_GET['module']) ? $_GET['module'] : 'email';
+$current_module = isset($_GET['module']) ? $_GET['module'] : 'activation';
 
 $stats = [];
 $recent_records = [];
 
-if ($current_module == 'email') {
-    $stmt = $pdo->query("SELECT COUNT(*) as count FROM email_records");
+if ($current_module == 'activation') {
+    // Filter only Active records for Activation module
+    $stmt = $pdo->query("SELECT COUNT(*) as count FROM email_records WHERE account_status = 'Active'");
     $stats['total'] = $stmt->fetch()['count'];
 
-    $stmt = $pdo->query("SELECT COUNT(*) as count FROM email_records WHERE account_status = 'Active'");
-    $stats['active'] = $stmt->fetch()['count'];
-
-    $stmt = $pdo->query("SELECT COUNT(*) as count FROM email_records WHERE account_status = 'Deactivated'");
-    $stats['deactivated'] = $stmt->fetch()['count'];
-
-    $stmt = $pdo->query("SELECT COUNT(*) as count FROM email_records WHERE DATE(created_at) = CURDATE()");
+    $stmt = $pdo->query("SELECT COUNT(*) as count FROM email_records WHERE account_status = 'Active' AND DATE(created_at) = CURDATE()");
     $stats['today'] = $stmt->fetch()['count'];
 
-    $stmt = $pdo->query("SELECT * FROM email_records ORDER BY created_at DESC LIMIT 10");
+    $stmt = $pdo->query("SELECT * FROM email_records WHERE account_status = 'Active' ORDER BY created_at DESC LIMIT 10");
+    $recent_records = $stmt->fetchAll();
+    
+} elseif ($current_module == 'deactivation') {
+    // Filter only Deactivated records for Deactivation module
+    $stmt = $pdo->query("SELECT COUNT(*) as count FROM email_records WHERE account_status = 'Deactivated'");
+    $stats['total'] = $stmt->fetch()['count'];
+
+    $stmt = $pdo->query("SELECT COUNT(*) as count FROM email_records WHERE account_status = 'Deactivated' AND DATE(created_at) = CURDATE()");
+    $stats['today'] = $stmt->fetch()['count'];
+
+    $stmt = $pdo->query("SELECT * FROM email_records WHERE account_status = 'Deactivated' ORDER BY created_at DESC LIMIT 10");
     $recent_records = $stmt->fetchAll();
     
 } elseif ($current_module == 'workspace') {
@@ -181,8 +187,11 @@ if ($current_module == 'email') {
         </div>
 
         <div class="module-tabs">
-            <a href="?module=email" class="module-tab <?php echo $current_module == 'email' ? 'active' : ''; ?>">
-                <span class="tab-label">Email Account<br>Activation/Deactivation</span>
+            <a href="?module=activation" class="module-tab <?php echo $current_module == 'activation' ? 'active' : ''; ?>">
+                <span class="tab-label">Email Account<br>Activation</span>
+            </a>
+            <a href="?module=deactivation" class="module-tab <?php echo $current_module == 'deactivation' ? 'active' : ''; ?>">
+                <span class="tab-label">Email Account<br>Deactivation</span>
             </a>
             <a href="?module=workspace" class="module-tab <?php echo $current_module == 'workspace' ? 'active' : ''; ?>">
                 <span class="tab-label">Google Workspace<br>Account License</span>
@@ -193,30 +202,19 @@ if ($current_module == 'email') {
             <a href="?module=training" class="module-tab <?php echo $current_module == 'training' ? 'active' : ''; ?>">
                 <span class="tab-label">Request for<br>Training/Seminar/Workshop</span>
             </a>
-            <div class="module-tab coming-soon">
-                <span class="tab-label">Module 5</span>
-                <span class="coming-soon-badge">Coming Soon</span>
-            </div>
+            
         </div>
 
-        <?php if ($current_module == 'email'): ?>
+        <?php if ($current_module == 'activation'): ?>
         
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-number"><?php echo $stats['total']; ?></div>
-                <div class="stat-label">Total Records</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number"><?php echo $stats['active']; ?></div>
-                <div class="stat-label">Active Accounts</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number"><?php echo $stats['deactivated']; ?></div>
-                <div class="stat-label">Deactivated</div>
+                <div class="stat-label">Total Active Accounts</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number"><?php echo $stats['today']; ?></div>
-                <div class="stat-label">Added Today</div>
+                <div class="stat-label">Activated Today</div>
             </div>
         </div>
 
@@ -225,15 +223,15 @@ if ($current_module == 'email') {
                 <h3 class="card-title">Quick Actions - Email Activation</h3>
             </div>
             <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                <a href="add_record.php" class="btn btn-primary">+ Add New Record</a>
-                <a href="records.php" class="btn btn-secondary">View All Records</a>
+                <a href="add_record.php?type=activation" class="btn btn-primary">+ Add New Activation</a>
+                <a href="records.php?status=Active" class="btn btn-secondary">View All Activations</a>
                 <a href="import.php" class="btn btn-secondary">Import from CSV</a>
             </div>
         </div>
 
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">Recent Email Records</h3>
+                <h3 class="card-title">Recent Activation Records</h3>
             </div>
             
             <?php if (count($recent_records) > 0): ?>
@@ -245,7 +243,7 @@ if ($current_module == 'email') {
                             <th>Name</th>
                             <th>Department</th>
                             <th>Email</th>
-                            <th>Status</th>
+                            <th>Request Type</th>
                             <th>Date Added</th>
                         </tr>
                     </thead>
@@ -260,8 +258,8 @@ if ($current_module == 'email') {
                             <td><?php echo htmlspecialchars($record['college_department']); ?></td>
                             <td><?php echo htmlspecialchars($record['email']); ?></td>
                             <td>
-                                <span class="badge badge-<?php echo $record['account_status'] == 'Active' ? 'approved' : 'rejected'; ?>">
-                                    <?php echo $record['account_status'] == 'Active' ? 'Activated' : 'Deactivated'; ?>
+                                <span class="badge badge-approved">
+                                    <?php echo htmlspecialchars($record['request_type']); ?>
                                 </span>
                             </td>
                             <td><?php echo date('M d, Y', strtotime($record['created_at'])); ?></td>
@@ -271,11 +269,84 @@ if ($current_module == 'email') {
                 </table>
             </div>
             <p style="text-align: center; margin-top: 15px;">
-                <a href="records.php">View All Records</a>
+                <a href="records.php?status=Active">View All Activation Records</a>
             </p>
             <?php else: ?>
                 <p style="text-align: center; color: #666; padding: 40px;">
-                    No records yet. <a href="add_record.php">Add your first record!</a>
+                    No activation records yet. <a href="add_record.php?type=activation">Add your first activation!</a>
+                </p>
+            <?php endif; ?>
+        </div>
+        
+        <?php elseif ($current_module == 'deactivation'): ?>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number"><?php echo $stats['total']; ?></div>
+                <div class="stat-label">Total Deactivated Accounts</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number"><?php echo $stats['today']; ?></div>
+                <div class="stat-label">Deactivated Today</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Quick Actions - Email Deactivation</h3>
+            </div>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <a href="add_record.php?type=deactivation" class="btn btn-primary">+ Add New Deactivation</a>
+                <a href="records.php?status=Deactivated" class="btn btn-secondary">View All Deactivations</a>
+                <a href="import.php" class="btn btn-secondary">Import from CSV</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Recent Deactivation Records</h3>
+            </div>
+            
+            <?php if (count($recent_records) > 0): ?>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Department</th>
+                            <th>Email</th>
+                            <th>Request Type</th>
+                            <th>Date Added</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php $count = 1; foreach ($recent_records as $record): ?>
+                        <tr>
+                            <td><?php echo $count++; ?></td>
+                            <td>
+                                <strong><?php echo htmlspecialchars($record['last_name']); ?></strong>, 
+                                <?php echo htmlspecialchars($record['first_name']); ?>
+                            </td>
+                            <td><?php echo htmlspecialchars($record['college_department']); ?></td>
+                            <td><?php echo htmlspecialchars($record['email']); ?></td>
+                            <td>
+                                <span class="badge badge-rejected">
+                                    <?php echo htmlspecialchars($record['request_type']); ?>
+                                </span>
+                            </td>
+                            <td><?php echo date('M d, Y', strtotime($record['created_at'])); ?></td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+            <p style="text-align: center; margin-top: 15px;">
+                <a href="records.php?status=Deactivated">View All Deactivation Records</a>
+            </p>
+            <?php else: ?>
+                <p style="text-align: center; color: #666; padding: 40px;">
+                    No deactivation records yet. <a href="add_record.php?type=deactivation">Add your first deactivation!</a>
                 </p>
             <?php endif; ?>
         </div>

@@ -129,7 +129,7 @@ if (isset($_GET['success'])) {
                         <option value="">-- Select Department --</option>
                         <?php foreach ($departments as $dept): ?>
                             <option value="<?php echo htmlspecialchars($dept['department_name']); ?>">
-                                <?php echo htmlspecialchars($dept['department_name']); ?>
+                                <?php echo htmlspecialchars($dept['department_code'] . ' - ' . $dept['department_name']); ?>
                             </option>
                         <?php endforeach; ?>
                     </select>

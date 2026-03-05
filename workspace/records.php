@@ -40,7 +40,8 @@ $department_mapping = [
     'LN' => 'Liceo Net',
     'CIT' => 'College of Information Technology',
     'IA' => 'Internal Audit',
-    'PP' => 'Physical Plant'
+    'PP' => 'Physical Plant',
+    'SophR' => 'Sophia Residence'
 ];
 
 // Helper function to get request status

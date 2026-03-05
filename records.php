@@ -42,7 +42,8 @@ $department_mapping = [
     'EAA' => 'Existing Account for Activation',
     'PP' => 'Physical Plant',
     'PHK' => 'PhilHealth Konsulta',
-    'GUID' => 'Guidance'
+    'GUID' => 'Guidance',
+    'SophR' => 'Sophia Residence'
 ];
 
 // Helper function to get request status

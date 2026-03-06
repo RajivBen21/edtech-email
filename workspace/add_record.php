@@ -130,7 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <?php foreach ($departments as $dept): ?>
                             <option value="<?php echo htmlspecialchars($dept['department_name']); ?>"
                                     <?php echo (isset($_POST['college_department']) && $_POST['college_department'] == $dept['department_name']) ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($dept['department_code'] . ' - ' . $dept['department_name']); ?>
+                                <?php echo htmlspecialchars($dept['department_name']); ?>
                             </option>
                         <?php endforeach; ?>
                     </select>

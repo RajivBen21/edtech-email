@@ -43,7 +43,8 @@ $department_mapping = [
     'PP' => 'Physical Plant',
     'SophR' => 'Sophia Residence',
     'SIKAP' => 'Sikap',
-    'INTL' => 'Internalization',
+    'INTL' => 'Internationalization
+    ',
     'SA' => 'Student Affairs',
     'HS' => 'Health Services',
     'PCO' => 'PCO',

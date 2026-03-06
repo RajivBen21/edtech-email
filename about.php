@@ -40,8 +40,8 @@ if (!isset($_SESSION['user_id'])) {
         }
 
         .developer-avatar {
-            width: 120px;
-            height: 120px;
+            width: 150px;
+            height: 150px;
             border-radius: 50%;
             margin: 0 auto 20px;
             background: linear-gradient(135deg, #2b6cb0, #4299e1);
@@ -51,7 +51,23 @@ if (!isset($_SESSION['user_id'])) {
             font-size: 48px;
             color: white;
             font-weight: 600;
-            border: 4px solid #ebf8ff;
+            border: 5px solid #ebf8ff;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .developer-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .developer-avatar.no-image {
+            /* Gradient background for cards without images */
+            background: linear-gradient(135deg, #2b6cb0, #4299e1);
         }
 
         .developer-name {
@@ -173,9 +189,8 @@ if (!isset($_SESSION['user_id'])) {
             </p>
         </div>
 
-        
 
-        <div class="section-divider"></div>
+        
 
         <!-- Development Team -->
         <div class="card">
@@ -184,9 +199,11 @@ if (!isset($_SESSION['user_id'])) {
             </div>
 
             <div class="developer-grid">
-                <!-- Developer 1 -->
+                <!-- Developer 1 - WITH PICTURE -->
                 <div class="developer-card">
-                    <div class="developer-avatar">BF</div>
+                    <div class="developer-avatar">
+                        <img src="images/developers/developer1.jpg" alt="Bern Francis Butawan">
+                    </div>
                     <div class="developer-name">Bern Francis Butawan</div>
                     <div class="developer-role">Developer</div>
                     <div class="developer-contact">
@@ -194,9 +211,11 @@ if (!isset($_SESSION['user_id'])) {
                     </div>
                 </div>
 
-                <!-- Developer 2 - Add your team members here -->
+                <!-- Developer 2 - WITH PICTURE -->
                 <div class="developer-card">
-                    <div class="developer-avatar">RB</div>
+                    <div class="developer-avatar">
+                        <img src="images/developers/developer2.jpg" alt="Rajiv Ben Alferez">
+                    </div>
                     <div class="developer-name">Rajiv Ben Alferez</div>
                     <div class="developer-role">Developer</div>
                     <div class="developer-contact">
@@ -205,11 +224,13 @@ if (!isset($_SESSION['user_id'])) {
                 </div>
 
                 <div class="developer-card">
-                    <div class="developer-avatar">KC</div>
+                    <div class="developer-avatar">
+                        <img src="images/developers/developer3.jpg" alt="Karen Cleo Aninion">
+                    </div>
                     <div class="developer-name">Karen Cleo Aninion</div>
                     <div class="developer-role">Supervisor</div>
                     <div class="developer-contact">
-                        <span>kaninion@liceo.edu.ph</span>
+                        <span>kcaninion@liceo.edu.ph</span>
                     </div>
                 </div>
 
@@ -217,14 +238,24 @@ if (!isset($_SESSION['user_id'])) {
             </div>
         </div>
 
-        <div class="section-divider"></div>
-
-        
+        <!-- Contact & Support -->
+        <div class="about-section">
+            <h2>Contact & Support</h2>
+            <p>
+                <strong>Educational Technology Center</strong><br>
+                Liceo de Cagayan University<br>
+                R.N. Pelaez Blvd., Kauswagan, Cagayan de Oro City<br>
+                <br>
+                Phone: (088) 858-4093<br>
+                Email: edtech@liceo.edu.ph<br>
+            </p>
+        </div>
 
         <!-- Footer -->
         <div class="card" style="text-align: center; background: linear-gradient(135deg, #1a365d, #2b6cb0); color: white;">
             <p style="margin: 0; font-size: 14px;">
                 &copy; <?php echo date('Y'); ?> Liceo de Cagayan University - Educational Technology Center<br>
+                <small style="opacity: 0.8;">Version 1.0.0</small>
             </p>
         </div>
     </div>

@@ -400,47 +400,66 @@ $departments = $stmt->fetchAll();
             </div>
             
             <form method="GET" action="" style="margin-bottom: 20px;">
-                <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
-                    <div class="form-group" style="margin: 0; flex: 1; min-width: 200px;">
-                        <label for="search" style="font-size: 12px;">Search</label>
-                        <input type="text" name="search" id="search" class="form-control" placeholder="Theme, venue, department..."
-                               value="<?php echo htmlspecialchars($search); ?>">
-                    </div>
-                    <div class="form-group" style="margin: 0; min-width: 180px;">
-                        <label for="department" style="font-size: 12px;">Department</label>
-                        <select name="department" id="department" class="form-control">
-                            <option value="">All Departments</option>
-                            <?php foreach ($departments as $dept): ?>
-                                <option value="<?php echo htmlspecialchars($dept['department_name']); ?>"
-                                        <?php echo $filter_department == $dept['department_name'] ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($dept['department_name']); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="form-group" style="margin: 0; min-width: 150px;">
-                        <label for="activity_type" style="font-size: 12px;">Activity Type</label>
-                        <select name="activity_type" id="activity_type" class="form-control">
-                            <option value="">All Types</option>
-                            <option value="Training" <?php echo $filter_activity_type == 'Training' ? 'selected' : ''; ?>>Training</option>
-                            <option value="Seminar" <?php echo $filter_activity_type == 'Seminar' ? 'selected' : ''; ?>>Seminar</option>
-                            <option value="Workshop" <?php echo $filter_activity_type == 'Workshop' ? 'selected' : ''; ?>>Workshop</option>
-                        </select>
-                    </div>
-                    <div class="form-group" style="margin: 0; min-width: 150px;">
-                        <label for="request_status" style="font-size: 12px;">Status</label>
-                        <select name="request_status" id="request_status" class="form-control">
-                            <option value="">All Status</option>
-                            <option value="pending" <?php echo $filter_request_status == 'pending' ? 'selected' : ''; ?>>Pending</option>
-                            <option value="received" <?php echo $filter_request_status == 'received' ? 'selected' : ''; ?>>Received</option>
-                            <option value="processing" <?php echo $filter_request_status == 'processing' ? 'selected' : ''; ?>>Processing</option>
-                            <option value="accomplished" <?php echo $filter_request_status == 'accomplished' ? 'selected' : ''; ?>>Accomplished</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Filter</button>
-                    <a href="records.php" class="btn btn-secondary">Reset</a>
-                </div>
-            </form>
+    <!-- Row 1: Search Bar (Full Width) -->
+    <div style="margin-bottom: 15px;">
+        <div class="form-group" style="margin: 0;">
+            <label for="search" style="font-size: 12px; font-weight: 600; color: #4a5568; margin-bottom: 5px; display: block;">Search</label>
+            <input type="text" name="search" id="search" class="form-control" 
+                   placeholder="Theme, venue, department..."
+                   value="<?php echo htmlspecialchars($search); ?>">
+        </div>
+    </div>
+    
+    <!-- Row 2: Department, Activity Type, Status, Filter & Reset Buttons (All Aligned) -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto auto; gap: 15px; align-items: end;">
+        <!-- Department -->
+        <div class="form-group" style="margin: 0;">
+            <label for="department" style="font-size: 12px; font-weight: 600; color: #4a5568; margin-bottom: 5px; display: block;">Department</label>
+            <select name="department" id="department" class="form-control">
+                <option value="">All Departments</option>
+                <?php foreach ($departments as $dept): ?>
+                    <option value="<?php echo htmlspecialchars($dept['department_name']); ?>"
+                            <?php echo $filter_department == $dept['department_name'] ? 'selected' : ''; ?>>
+                        <?php echo htmlspecialchars($dept['department_name']); ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        
+        <!-- Activity Type -->
+        <div class="form-group" style="margin: 0;">
+            <label for="activity_type" style="font-size: 12px; font-weight: 600; color: #4a5568; margin-bottom: 5px; display: block;">Activity Type</label>
+            <select name="activity_type" id="activity_type" class="form-control">
+                <option value="">All Types</option>
+                <option value="Training" <?php echo $filter_activity_type == 'Training' ? 'selected' : ''; ?>>Training</option>
+                <option value="Seminar" <?php echo $filter_activity_type == 'Seminar' ? 'selected' : ''; ?>>Seminar</option>
+                <option value="Workshop" <?php echo $filter_activity_type == 'Workshop' ? 'selected' : ''; ?>>Workshop</option>
+            </select>
+        </div>
+        
+        <!-- Status -->
+        <div class="form-group" style="margin: 0;">
+            <label for="status" style="font-size: 12px; font-weight: 600; color: #4a5568; margin-bottom: 5px; display: block;">Status</label>
+            <select name="status" id="status" class="form-control">
+                <option value="">All Status</option>
+                <option value="pending" <?php echo $filter_status == 'pending' ? 'selected' : ''; ?>>Pending</option>
+                <option value="received" <?php echo $filter_status == 'received' ? 'selected' : ''; ?>>Received</option>
+                <option value="processing" <?php echo $filter_status == 'processing' ? 'selected' : ''; ?>>Processing</option>
+                <option value="accomplished" <?php echo $filter_status == 'accomplished' ? 'selected' : ''; ?>>Accomplished</option>
+            </select>
+        </div>
+        
+        <!-- Filter Button -->
+        <button type="submit" class="btn btn-primary" style="height: 38px; white-space: nowrap;">
+            Filter
+        </button>
+        
+        <!-- Reset Button -->
+        <a href="records.php" class="btn btn-secondary" style="height: 38px; display: flex; align-items: center; white-space: nowrap;">
+            Reset
+        </a>
+    </div>
+</form>
             
             <div style="margin-bottom: 15px; color: #666;">
                 Showing <?php echo count($records); ?> of <?php echo $total_records; ?> records

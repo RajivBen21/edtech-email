@@ -175,8 +175,9 @@ if ($current_module == 'activation') {
             </div>
         </div>
         <nav class="nav-menu">
-            <a href="dashboard.php" class="active">Dashboard</a>
-            <a href="logout.php">Logout (<?php echo $_SESSION['username']; ?>)</a>
+             <a href="dashboard.php" class="active">Dashboard</a>
+            <a href="about.php">About Us</a>
+             <a href="logout.php">Logout (<?php echo $_SESSION['username']; ?>)</a>
         </nav>
     </div>
 

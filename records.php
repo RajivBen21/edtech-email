@@ -43,7 +43,24 @@ $department_mapping = [
     'PP' => 'Physical Plant',
     'PHK' => 'PhilHealth Konsulta',
     'GUID' => 'Guidance',
-    'SophR' => 'Sophia Residence'
+    'SophR' => 'Sophia Residence',
+    'SIKAP' => 'Sikap',
+    'INTL' => 'Internalization',
+    'SA' => 'Student Affairs',
+    'HS' => 'Health Services',
+    'PCO' => 'PCO',
+    'SS' => 'Safety and Security',
+    'LOCA' => 'LOCA',
+    'FIN' => 'Finance',
+    'BA' => 'Business Application',
+    'IO' => 'Infrastructure Operations',
+    'LMP' => 'Liceo Media and Promotions',
+    'RIM' => 'RIM',
+    'ESL' => 'Extension and Service Learning',
+    'RC' => 'Research and Coordination',
+    'REB' => 'Research Ethics Board',
+    'PGZ' => 'PG and Zealep',
+    'SRLS' => 'Safer River Life Saver'
 ];
 
 // Helper function to get request status

@@ -413,7 +413,7 @@ $departments = $stmt->fetchAll();
                             <?php foreach ($departments as $dept): ?>
                                 <option value="<?php echo htmlspecialchars($dept['department_name']); ?>"
                                         <?php echo $filter_department == $dept['department_name'] ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($dept['department_code']); ?>
+                                    <?php echo htmlspecialchars($dept['department_name']); ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>

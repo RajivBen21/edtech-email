@@ -192,6 +192,7 @@ $filter_department = isset($_GET['department']) ? $_GET['department'] : '';
 $filter_status = isset($_GET['status']) ? $_GET['status'] : '';
 $filter_request_status = isset($_GET['request_status']) ? $_GET['request_status'] : '';
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
+$filter_date = isset($_GET['filter_date']) ? $_GET['filter_date'] : '';
 
 // Pagination settings
 $records_per_page = 50;
@@ -257,11 +258,17 @@ if (!empty($filter_request_status)) {
 }
 
 if (!empty($search)) {
-    $sql .= " AND (last_name LIKE ? OR first_name LIKE ? OR email LIKE ? OR college_department LIKE ?)";
+    $sql .= " AND (last_name LIKE ? OR first_name LIKE ? OR liceo_email LIKE ? OR college_department LIKE ?)";
     $params[] = "%$search%";
     $params[] = "%$search%";
     $params[] = "%$search%";
     $params[] = "%$search%";
+}
+
+// Date filter
+if (!empty($filter_date)) {
+    $sql .= " AND DATE(record_date) = ?";
+    $params[] = $filter_date;
 }
 
 $sql .= " ORDER BY created_at DESC";
@@ -519,37 +526,41 @@ $departments = $stmt->fetchAll();
             <?php endif; ?>
             
             <!-- Filters -->
-            <form method="GET" action="" class="search-bar">
-                <select name="department" class="form-control" style="width: auto;">
-                    <option value="">All Departments</option>
-                    <?php foreach ($departments as $dept): ?>
-                        <option value="<?php echo htmlspecialchars($dept['department_name']); ?>"
-                                <?php echo $filter_department == $dept['department_name'] ? 'selected' : ''; ?>>
-                            <?php echo htmlspecialchars($dept['department_name']); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-                
-                <select name="status" class="form-control" style="width: auto;">
-                    <option value="">All Account Status</option>
-                    <option value="Active" <?php echo $filter_status == 'Active' ? 'selected' : ''; ?>>Activated</option>   
-                    <option value="Deactivated" <?php echo $filter_status == 'Deactivated' ? 'selected' : ''; ?>>Deactivated</option>
-                </select>
-                
-                <select name="request_status" class="form-control" style="width: auto;">
-                    <option value="">All Request Status</option>
-                    <option value="pending" <?php echo $filter_request_status == 'pending' ? 'selected' : ''; ?>>Pending</option>
-                    <option value="received" <?php echo $filter_request_status == 'received' ? 'selected' : ''; ?>>Received</option>
-                    <option value="processing" <?php echo $filter_request_status == 'processing' ? 'selected' : ''; ?>>Processing</option>
-                    <option value="accomplished" <?php echo $filter_request_status == 'accomplished' ? 'selected' : ''; ?>>Accomplished</option>
-                </select>
-                
-                <input type="text" name="search" placeholder="Search name, email, or department..." 
-                       value="<?php echo htmlspecialchars($search); ?>" class="form-control">
-                
-                <button type="submit" class="btn btn-primary">Filter</button>
-                <a href="records.php" class="btn btn-secondary">Reset</a>
-            </form>
+<form method="GET" action="" class="search-bar" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 20px;">
+    <select name="department" class="form-control">
+        <option value="">All Departments</option>
+        <?php foreach ($departments as $dept): ?>
+            <option value="<?php echo htmlspecialchars($dept['department_name']); ?>"
+                    <?php echo $filter_department == $dept['department_name'] ? 'selected' : ''; ?>>
+                <?php echo htmlspecialchars($dept['department_code'] . ' - ' . $dept['department_name']); ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
+    
+    <select name="status" class="form-control">
+        <option value="">All Status</option>
+        <option value="Full-time" <?php echo $filter_status == 'Full-time' ? 'selected' : ''; ?>>Full-time</option>
+        <option value="Part-time" <?php echo $filter_status == 'Part-time' ? 'selected' : ''; ?>>Part-time</option>
+        <option value="Probationary" <?php echo $filter_status == 'Probationary' ? 'selected' : ''; ?>>Probationary</option>
+    </select>
+    
+    <select name="request_status" class="form-control">
+        <option value="">All Request Status</option>
+        <option value="pending" <?php echo $filter_request_status == 'pending' ? 'selected' : ''; ?>>Pending</option>
+        <option value="received" <?php echo $filter_request_status == 'received' ? 'selected' : ''; ?>>Received</option>
+        <option value="processing" <?php echo $filter_request_status == 'processing' ? 'selected' : ''; ?>>Processing</option>
+        <option value="accomplished" <?php echo $filter_request_status == 'accomplished' ? 'selected' : ''; ?>>Accomplished</option>
+    </select>
+    
+    <input type="date" name="filter_date" placeholder="Filter by Date" 
+           value="<?php echo htmlspecialchars($filter_date); ?>" class="form-control">
+    
+    <input type="text" name="search" placeholder="Search name, email..." 
+           value="<?php echo htmlspecialchars($search); ?>" class="form-control" style="grid-column: span 2;">
+    
+    <button type="submit" class="btn btn-primary">Filter</button>
+    <a href="records.php" class="btn btn-secondary">Reset</a>
+</form>
             
             <?php if (count($records) > 0): ?>
             

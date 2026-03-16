@@ -258,7 +258,7 @@ if (!empty($filter_request_status)) {
 }
 
 if (!empty($search)) {
-    $sql .= " AND (last_name LIKE ? OR first_name LIKE ? OR liceo_email LIKE ? OR college_department LIKE ?)";
+    $sql .= " AND (last_name LIKE ? OR first_name LIKE ? OR email LIKE ? OR college_department LIKE ?)";
     $params[] = "%$search%";
     $params[] = "%$search%";
     $params[] = "%$search%";

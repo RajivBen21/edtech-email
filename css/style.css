@@ -1117,3 +1117,19 @@ tr.selected-row:hover {
     opacity: 1 !important;
     visibility: visible !important;
 }
+
+/* Clean styling for the three-dots menu button */
+.menu-btn {
+    background: transparent !important;
+    border: none;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: background 0.3s ease;
+}
+
+.menu-btn:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+}

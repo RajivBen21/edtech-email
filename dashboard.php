@@ -166,7 +166,7 @@ if ($current_module == 'activation') {
     </style>
 </head>
 <body>
-    <div class="header">
+        <div class="header">
         <div class="header-left">
             <img src="images/tech-ed-logo.png" alt="EdTech Logo" class="header-logo">
             <div>
@@ -174,16 +174,54 @@ if ($current_module == 'activation') {
                 <div class="header-subtitle">Liceo de Cagayan University</div>
             </div>
         </div>
-        <nav class="nav-menu">
-             <a href="dashboard.php" class="active">Dashboard</a>
+                <nav class="nav-menu">
+            <a href="dashboard.php" class="active">Dashboard</a>
             <a href="about.php">About Us</a>
-             <a href="logout.php">Logout (<?php echo $_SESSION['username']; ?>)</a>
+            <button class="menu-btn" onclick="toggleMenu()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 5px; cursor: pointer; margin-left: 10px;">
+                <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                </svg>
+            </button>
+            <div id="menuDropdown" style="display: none; position: absolute; top: 60px; right: 30px; background: white; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); min-width: 200px; z-index: 1000;">
+                <div style="padding: 12px 16px; border-bottom: 1px solid #e2e8f0; font-weight: 600; color: #1a365d; font-size: 13px;">
+                    <?php echo htmlspecialchars($_SESSION['username']); ?>
+                </div>
+                <a href="change_password.php" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: #2d3748; text-decoration: none; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='#f7fafc'" onmouseout="this.style.backgroundColor='transparent'">
+                    Change Password
+                </a>
+                <a href="logout.php" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: #e53e3e; text-decoration: none; border-top: 1px solid #e2e8f0; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='#fed7d7'" onmouseout="this.style.backgroundColor='transparent'">
+                    Logout
+                </a>
+            </div>
         </nav>
     </div>
+                                    <nav class="nav-menu">
+            <a href="dashboard.php" class="active">Dashboard</a>
+            <a href="about.php">About Us</a>
+        </nav>
+        <div style="position: relative;">
+            <button class="menu-btn" onclick="toggleMenu()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 5px; cursor: pointer; margin-right: 20px;">
+                <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                </svg>
+            </button>
+            <div id="menuDropdown" style="display: none; position: absolute; top: 50px; right: 0; background: white; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); min-width: 200px; z-index: 1000;">
+                <div style="padding: 12px 16px; border-bottom: 1px solid #e2e8f0; font-weight: 600; color: #1a365d; font-size: 13px;">
+                    <?php echo htmlspecialchars($_SESSION['username']); ?>
+                </div>
+                <a href="change_password.php" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: #2d3748; text-decoration: none; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='#f7fafc'" onmouseout="this.style.backgroundColor='transparent'">
+                    🔐 Change Password
+                </a>
+                <a href="logout.php" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: #e53e3e; text-decoration: none; border-top: 1px solid #e2e8f0; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='#fed7d7'" onmouseout="this.style.backgroundColor='transparent'">
+                    🚪 Logout
+                </a>
+            </div>
+        </div>
+    </div>
 
-    <div class="container">
-        <div class="card" style="margin-bottom: 25px;">
-            <h2>Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?>!</h2>
+        <div class="container" style="margin-top: 0 !important;">
+        <div class="card" style="margin-bottom: 25px; margin-top: 0 !important;">
+            <h2 style="margin-top: 0;">Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?>!</h2>
             <p>Role: <?php echo $_SESSION['role'] ?? 'Staff'; ?></p>
         </div>
 
@@ -574,5 +612,23 @@ if ($current_module == 'activation') {
         
         <?php endif; ?>
     </div>
+                <script>
+        function toggleMenu() {
+            const menu = document.getElementById('menuDropdown');
+            if (menu.style.display === 'none') {
+                menu.style.display = 'block';
+            } else {
+                menu.style.display = 'none';
+            }
+        }
+
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('menuDropdown');
+            const btn = document.querySelector('.menu-btn');
+            if (!menu.contains(e.target) && !btn.contains(e.target)) {
+                menu.style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>

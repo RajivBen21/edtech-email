@@ -99,7 +99,7 @@ if (isset($_GET['success'])) {
             <div class="header-subtitle">Liceo de Cagayan University</div>
         </div>
     </div>
-    <nav class="nav-menu">
+        <nav class="nav-menu">
         <a href="dashboard.php">Dashboard</a>
         <a href="records.php">All Records</a>
         <a href="logout.php">Logout (<?php echo $_SESSION['username']; ?>)</a>

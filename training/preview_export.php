@@ -118,7 +118,7 @@ $total_departments = count($grouped_records);
 <body>
     <div class="header">
         <div class="header-left">
-            <img src="../images/tech-ed-logo.png" alt="EdTech Logo" class="header-logo">
+            <a href="../dashboard.php" style="cursor: pointer;"><img src="../images/tech-ed-logo.png" alt="EdTech Logo" class="header-logo"></a>
             <div>
                 <h1>Educational Technology Center</h1>
                 <div class="header-subtitle">Liceo de Cagayan University</div>

@@ -98,13 +98,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['csv_file'])) {
 <body>
     <!-- Header -->
 <div class="header">
-    <div class="header-left">
-        <img src="images/tech-ed-logo.png" alt="EdTech Logo" class="header-logo">
+       <a href="dashboard.php" class="header-left" style="text-decoration: none; color: inherit; cursor: pointer;">
+        <a href="dashboard.php" style="cursor: pointer;"><img src="images/tech-ed-logo.png" alt="EdTech Logo" class="header-logo"></a>
         <div>
             <h1>Educational Technology Center</h1>
             <div class="header-subtitle">Liceo de Cagayan University</div>
         </div>
-    </div>
+    </a>
         <nav class="nav-menu">
         <a href="dashboard.php">Dashboard</a>
         <a href="records.php">All Records</a>

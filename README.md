@@ -17,5 +17,6 @@ A comprehensive, multi-module web application developed for the Educational Tech
 * **Safety First:** Undo-delete feature with session-based recovery.
 
 ## 📸 Screenshots
-*(Drag and drop a screenshot of your Login Page here!)*
-*(Drag and drop a screenshot of your Dashboard/Records Table here!)*
+<img width="1917" height="908" alt="edtlogin" src="https://github.com/user-attachments/assets/ef70603e-9c6c-4454-9393-d7e813dbc18d" />
+
+<img width="1902" height="911" alt="Screenshot 2026-05-05 170115" src="https://github.com/user-attachments/assets/f7d5435f-23f0-4214-a1dc-bbcc52221507" />
